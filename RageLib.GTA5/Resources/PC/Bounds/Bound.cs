@@ -38,17 +38,19 @@ namespace RageLib.Resources.GTA5.PC.Bounds
         public uint Unknown_18h;
         public uint Unknown_1Ch;
         public RAGE_Vector3 BoundingBoxMax;
-        public float Unknown_2Ch;
+        public float Margin;
         public RAGE_Vector3 BoundingBoxMin;
         public uint Unknown_3Ch;
         public RAGE_Vector3 BoundingBoxCenter;
         public uint Unknown_4Ch;
-        public RAGE_Vector3 Center;
-        public uint Unknown_5Ch;
+        public RAGE_Vector3 CenterGravity;
+        public byte PolyFlags;
+        public byte MaterialColorIndex;
+        public ushort Unknown_5Eh;
         public float Unknown_60h;
         public float Unknown_64h;
         public float Unknown_68h;
-        public uint Unknown_6Ch;
+        public float BoundingBoxVolume;
 
         /// <summary>
         /// Reads the data-block from a stream.
@@ -65,17 +67,19 @@ namespace RageLib.Resources.GTA5.PC.Bounds
             this.Unknown_18h = reader.ReadUInt32();
             this.Unknown_1Ch = reader.ReadUInt32();
             this.BoundingBoxMax = reader.ReadBlock<RAGE_Vector3>();
-            this.Unknown_2Ch = reader.ReadSingle();
+            this.Margin = reader.ReadSingle();
             this.BoundingBoxMin = reader.ReadBlock<RAGE_Vector3>();
             this.Unknown_3Ch = reader.ReadUInt32();
             this.BoundingBoxCenter = reader.ReadBlock<RAGE_Vector3>();
             this.Unknown_4Ch = reader.ReadUInt32();
-            this.Center = reader.ReadBlock<RAGE_Vector3>();
-            this.Unknown_5Ch = reader.ReadUInt32();
+            this.CenterGravity = reader.ReadBlock<RAGE_Vector3>();
+            this.PolyFlags = reader.ReadByte();
+            this.MaterialColorIndex = reader.ReadByte();
+            this.Unknown_5Eh = reader.ReadUInt16();
             this.Unknown_60h = reader.ReadSingle();
             this.Unknown_64h = reader.ReadSingle();
             this.Unknown_68h = reader.ReadSingle();
-            this.Unknown_6Ch = reader.ReadUInt32();
+            this.BoundingBoxVolume = reader.ReadSingle();
         }
 
         /// <summary>
@@ -93,17 +97,19 @@ namespace RageLib.Resources.GTA5.PC.Bounds
             writer.Write(this.Unknown_18h);
             writer.Write(this.Unknown_1Ch);
             writer.WriteBlock(this.BoundingBoxMax);
-            writer.Write(this.Unknown_2Ch);
+            writer.Write(this.Margin);
             writer.WriteBlock(this.BoundingBoxMin);
             writer.Write(this.Unknown_3Ch);
             writer.WriteBlock(this.BoundingBoxCenter);
             writer.Write(this.Unknown_4Ch);
-            writer.WriteBlock(this.Center);
-            writer.Write(this.Unknown_5Ch);
+            writer.WriteBlock(this.CenterGravity);
+            writer.Write(this.PolyFlags);
+            writer.Write(this.MaterialColorIndex);
+            writer.Write(this.Unknown_5Eh);
             writer.Write(this.Unknown_60h);
             writer.Write(this.Unknown_64h);
             writer.Write(this.Unknown_68h);
-            writer.Write(this.Unknown_6Ch);
+            writer.Write(this.BoundingBoxVolume);
         }
 
         public IResourceSystemBlock GetType(ResourceDataReader reader, params object[] parameters)

@@ -38,14 +38,20 @@ namespace RageLib.Resources.GTA5.PC.Drawables
         public ushort GeometriesCount1;
         public ushort GeometriesCount2;
         public uint Unknown_14h; // 0x00000000
-        public ulong Unknown_18h_Pointer;
+        public ulong BoundsPointer;
         public ulong ShaderMappingPointer;
-        public uint Unknown_28h;
-        public uint Unknown_2Ch;
+        public byte BoneCount;
+        public byte IsSkinned1;
+        public byte Unknown_2Ah;
+        public byte BoneIndex;
+        public byte Mask;
+        public byte IsSkinned2;
+        public byte Unknown_2Eh;
+        public byte Unknown_2Fh;
 
         // reference data
         public ResourcePointerArray64<DrawableGeometry> Geometries;
-        public ResourceSimpleArray<RAGE_AABB> Unknown_18h_Data;
+        public ResourceSimpleArray<RAGE_AABB> BoundsData;
         public ResourceSimpleArray<ushort_r> ShaderMapping;
 
         /// <summary>
@@ -60,18 +66,24 @@ namespace RageLib.Resources.GTA5.PC.Drawables
             this.GeometriesCount1 = reader.ReadUInt16();
             this.GeometriesCount2 = reader.ReadUInt16();
             this.Unknown_14h = reader.ReadUInt32();
-            this.Unknown_18h_Pointer = reader.ReadUInt64();
+            this.BoundsPointer = reader.ReadUInt64();
             this.ShaderMappingPointer = reader.ReadUInt64();
-            this.Unknown_28h = reader.ReadUInt32();
-            this.Unknown_2Ch = reader.ReadUInt32();
+            this.BoneCount = reader.ReadByte();
+            this.IsSkinned1 = reader.ReadByte();
+            this.Unknown_2Ah = reader.ReadByte();
+            this.BoneIndex = reader.ReadByte();
+            this.Mask = reader.ReadByte();
+            this.IsSkinned2 = reader.ReadByte();
+            this.Unknown_2Eh = reader.ReadByte();
+            this.Unknown_2Fh = reader.ReadByte();
 
             // read reference data
             this.Geometries = reader.ReadBlockAt<ResourcePointerArray64<DrawableGeometry>>(
                 this.GeometriesPointer, // offset
                 this.GeometriesCount1
             );
-            this.Unknown_18h_Data = reader.ReadBlockAt<ResourceSimpleArray<RAGE_AABB>>(
-                this.Unknown_18h_Pointer, // offset
+            this.BoundsData = reader.ReadBlockAt<ResourceSimpleArray<RAGE_AABB>>(
+                this.BoundsPointer, // offset
                 this.GeometriesCount1 > 1 ? this.GeometriesCount1 + 1 : this.GeometriesCount1
             );
             this.ShaderMapping = reader.ReadBlockAt<ResourceSimpleArray<ushort_r>>(
@@ -88,7 +100,7 @@ namespace RageLib.Resources.GTA5.PC.Drawables
             // update structure data
             this.GeometriesPointer = (ulong)(this.Geometries != null ? this.Geometries.Position : 0);
             //	this.GeometriesCount1 = (ushort)(this.Geometries != null ? this.Geometries.Count : 0);
-            this.Unknown_18h_Pointer = (ulong)(this.Unknown_18h_Data != null ? this.Unknown_18h_Data.Position : 0);
+            this.BoundsPointer = (ulong)(this.BoundsData != null ? this.BoundsData.Position : 0);
             this.ShaderMappingPointer = (ulong)(this.ShaderMapping != null ? this.ShaderMapping.Position : 0);
 
             // write structure data
@@ -98,10 +110,16 @@ namespace RageLib.Resources.GTA5.PC.Drawables
             writer.Write(this.GeometriesCount1);
             writer.Write(this.GeometriesCount2);
             writer.Write(this.Unknown_14h);
-            writer.Write(this.Unknown_18h_Pointer);
+            writer.Write(this.BoundsPointer);
             writer.Write(this.ShaderMappingPointer);
-            writer.Write(this.Unknown_28h);
-            writer.Write(this.Unknown_2Ch);
+            writer.Write(this.BoneCount);
+            writer.Write(this.IsSkinned1);
+            writer.Write(this.Unknown_2Ah);
+            writer.Write(this.BoneIndex);
+            writer.Write(this.Mask);
+            writer.Write(this.IsSkinned2);
+            writer.Write(this.Unknown_2Eh);
+            writer.Write(this.Unknown_2Fh);
         }
 
         /// <summary>
@@ -111,7 +129,7 @@ namespace RageLib.Resources.GTA5.PC.Drawables
         {
             var list = new List<IResourceBlock>();
             if (Geometries != null) list.Add(Geometries);
-            if (Unknown_18h_Data != null) list.Add(Unknown_18h_Data);
+            if (BoundsData != null) list.Add(BoundsData);
             if (ShaderMapping != null) list.Add(ShaderMapping);
             return list.ToArray();
         }

@@ -54,11 +54,11 @@ namespace RageLib.Resources.GTA5.PC.Drawables
         public uint Unknown_50h; // 0x00000000
         public uint Unknown_54h; // 0x00000000
         public uint IndicesCount;
-        public uint Unknown_5Ch;
+        public uint TrianglesCount;
         public ushort VerticesCount;
         public ushort Unknown_62h; // 0x0003
         public uint Unknown_64h; // 0x00000000
-        public ulong Unknown_68h_Pointer;
+        public ulong BoneIdsPointer;
         public ushort VertexStride;
         public ushort Count1;
         public uint Unknown_74h; // 0x00000000
@@ -73,7 +73,7 @@ namespace RageLib.Resources.GTA5.PC.Drawables
         // reference data
         public VertexBuffer VertexBuffer;
         public IndexBuffer IndexBuffer;
-        public ResourceSimpleArray<ushort_r> Unknown_68h_Data;
+        public ResourceSimpleArray<ushort_r> BoneIds; //BoneIds
         public VertexData_GTA5_pc VertexData;
 
         /// <summary>
@@ -103,11 +103,11 @@ namespace RageLib.Resources.GTA5.PC.Drawables
             this.Unknown_50h = reader.ReadUInt32();
             this.Unknown_54h = reader.ReadUInt32();
             this.IndicesCount = reader.ReadUInt32();
-            this.Unknown_5Ch = reader.ReadUInt32();
+            this.TrianglesCount = reader.ReadUInt32();
             this.VerticesCount = reader.ReadUInt16();
             this.Unknown_62h = reader.ReadUInt16();
             this.Unknown_64h = reader.ReadUInt32();
-            this.Unknown_68h_Pointer = reader.ReadUInt64();
+            this.BoneIdsPointer = reader.ReadUInt64();
             this.VertexStride = reader.ReadUInt16();
             this.Count1 = reader.ReadUInt16();
             this.Unknown_74h = reader.ReadUInt32();
@@ -126,8 +126,8 @@ namespace RageLib.Resources.GTA5.PC.Drawables
             this.IndexBuffer = reader.ReadBlockAt<IndexBuffer>(
                 this.IndexBufferPointer // offset
             );
-            this.Unknown_68h_Data = reader.ReadBlockAt<ResourceSimpleArray<ushort_r>>(
-                this.Unknown_68h_Pointer, // offset
+            this.BoneIds = reader.ReadBlockAt<ResourceSimpleArray<ushort_r>>(
+                this.BoneIdsPointer, // offset
                 this.Count1
             );
             this.VertexData = reader.ReadBlockAt<VertexData_GTA5_pc>(
@@ -148,7 +148,7 @@ namespace RageLib.Resources.GTA5.PC.Drawables
             this.IndexBufferPointer = (ulong)(this.IndexBuffer != null ? this.IndexBuffer.Position : 0);
             //this.IndicesCount = (uint)(this.IndexBuffer?.Indices?.Count ?? 0);
             //this.VerticesCount = (ushort)(this.VertexBuffer?.VertexCount ?? 0); // assume vertex buffer is aleady updated
-            this.Unknown_68h_Pointer = (ulong)(this.Unknown_68h_Data != null ? this.Unknown_68h_Data.Position : 0);
+            this.BoneIdsPointer = (ulong)(this.BoneIds != null ? this.BoneIds.Position : 0);
             //this.Count1 = (ushort)(this.Unknown_68h_Data?.Length ?? 0);
             //this.VertexStride = (ushort)(this.VertexData != null ? this.VertexData.Count : 0);
             this.VertexDataPointer = (ulong)(this.VertexData != null ? this.VertexData.Position : 0);
@@ -175,11 +175,11 @@ namespace RageLib.Resources.GTA5.PC.Drawables
             writer.Write(this.Unknown_50h);
             writer.Write(this.Unknown_54h);
             writer.Write(this.IndicesCount);
-            writer.Write(this.Unknown_5Ch);
+            writer.Write(this.TrianglesCount);
             writer.Write(this.VerticesCount);
             writer.Write(this.Unknown_62h);
             writer.Write(this.Unknown_64h);
-            writer.Write(this.Unknown_68h_Pointer);
+            writer.Write(this.BoneIdsPointer);
             writer.Write(this.VertexStride);
             writer.Write(this.Count1);
             writer.Write(this.Unknown_74h);
@@ -200,7 +200,7 @@ namespace RageLib.Resources.GTA5.PC.Drawables
             var list = new List<IResourceBlock>();
             if (VertexBuffer != null) list.Add(VertexBuffer);
             if (IndexBuffer != null) list.Add(IndexBuffer);
-            if (Unknown_68h_Data != null) list.Add(Unknown_68h_Data);
+            if (BoneIds != null) list.Add(BoneIds);
             if (VertexData != null) list.Add(VertexData);
             return list.ToArray();
         }
