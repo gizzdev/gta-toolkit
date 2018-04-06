@@ -38,14 +38,15 @@ namespace RageLib.Resources.GTA5.PC.Drawables
         public float TranslationY;
         public float TranslationZ;
         public uint Unknown_1Ch; // 0x00000000
-        public float Unknown_20h; // 1.0
-        public float Unknown_24h; // 1.0
-        public float Unknown_28h; // 1.0
+        public float ScaleX; // 1.0
+        public float ScaleY; // 1.0
+        public float ScaleZ; // 1.0
         public float Unknown_2Ch; // 1.0
-        public uint Unknown_30h;
+        public short NextSiblingIndex;
+        public short ParentIndex;
         public uint Unknown_34h; // 0x00000000
         public ulong NamePointer;
-        public ushort Unknown_40h;
+        public ushort Flags;
         public ushort Unknown_42h;
         public ushort Id;
         public ushort Unknown_46h;
@@ -69,14 +70,15 @@ namespace RageLib.Resources.GTA5.PC.Drawables
             this.TranslationY = reader.ReadSingle();
             this.TranslationZ = reader.ReadSingle();
             this.Unknown_1Ch = reader.ReadUInt32();
-            this.Unknown_20h = reader.ReadSingle();
-            this.Unknown_24h = reader.ReadSingle();
-            this.Unknown_28h = reader.ReadSingle();
+            this.ScaleX = reader.ReadSingle();
+            this.ScaleY = reader.ReadSingle();
+            this.ScaleZ = reader.ReadSingle();
             this.Unknown_2Ch = reader.ReadSingle();
-            this.Unknown_30h = reader.ReadUInt32();
+            this.NextSiblingIndex = reader.ReadInt16();
+            this.ParentIndex = reader.ReadInt16();
             this.Unknown_34h = reader.ReadUInt32();
             this.NamePointer = reader.ReadUInt64();
-            this.Unknown_40h = reader.ReadUInt16();
+            this.Flags = reader.ReadUInt16();
             this.Unknown_42h = reader.ReadUInt16();
             this.Id = reader.ReadUInt16();
             this.Unknown_46h = reader.ReadUInt16();
@@ -106,14 +108,15 @@ namespace RageLib.Resources.GTA5.PC.Drawables
             writer.Write(this.TranslationY);
             writer.Write(this.TranslationZ);
             writer.Write(this.Unknown_1Ch);
-            writer.Write(this.Unknown_20h);
-            writer.Write(this.Unknown_24h);
-            writer.Write(this.Unknown_28h);
+            writer.Write(this.ScaleX);
+            writer.Write(this.ScaleY);
+            writer.Write(this.ScaleZ);
             writer.Write(this.Unknown_2Ch);
-            writer.Write(this.Unknown_30h);
+            writer.Write(this.NextSiblingIndex);
+            writer.Write(this.ParentIndex);
             writer.Write(this.Unknown_34h);
             writer.Write(this.NamePointer);
-            writer.Write(this.Unknown_40h);
+            writer.Write(this.Flags);
             writer.Write(this.Unknown_42h);
             writer.Write(this.Id);
             writer.Write(this.Unknown_46h);
