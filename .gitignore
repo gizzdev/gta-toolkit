@@ -18,3 +18,6 @@ x64/Release/*
 Toolkit.VC.db
 Toolkit.VC.VC.opendb
 *.csproj.user
+
+# Doxygen
+doxygen-xml/*
