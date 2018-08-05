@@ -27,8 +27,39 @@ namespace RageLib.Resources.GTA5.PC.Bounds
         public override long Length => 8;
 
         // structure data
-        public uint Unknown_0h;
-        public uint Unknown_4h;
+        public byte MaterialIndex;
+        public byte ProcIc;
+        public byte RoomId_And_PedDensity;  // First 5 bits for RoomId, Last 3 bits for PedDensity
+        public byte Unknown_3h;
+        public byte Unknown_4h;
+        public byte MaterialColorIndex;
+        public short Unknown_6h;
+
+        public int RoomId
+        {
+            get
+            {
+                return 0b00011111 & this.RoomId_And_PedDensity;
+            }
+            
+            set
+            {
+                this.RoomId_And_PedDensity = (byte) ((this.RoomId_And_PedDensity & ~0b00011111) | value);
+            }
+        }
+
+        public int PedDensity
+        {
+            get
+            {
+                return (0b11100000 & this.RoomId_And_PedDensity) >> 5;
+            }
+
+            set
+            {
+                this.RoomId_And_PedDensity = (byte)((this.RoomId_And_PedDensity & ~0b11100000) | value << 5);
+            }
+        }
 
         /// <summary>
         /// Reads the data-block from a stream.
@@ -36,8 +67,13 @@ namespace RageLib.Resources.GTA5.PC.Bounds
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
             // read structure data
-            this.Unknown_0h = reader.ReadUInt32();
-            this.Unknown_4h = reader.ReadUInt32();
+            this.MaterialIndex = reader.ReadByte();
+            this.ProcIc = reader.ReadByte();
+            this.RoomId_And_PedDensity = reader.ReadByte();
+            this.Unknown_3h = reader.ReadByte();
+            this.Unknown_4h = reader.ReadByte();
+            this.MaterialColorIndex = reader.ReadByte();
+            this.Unknown_6h = reader.ReadInt16(); ;
         }
 
         /// <summary>
@@ -46,8 +82,13 @@ namespace RageLib.Resources.GTA5.PC.Bounds
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
             // write structure data
-            writer.Write(this.Unknown_0h);
+            writer.Write(this.MaterialIndex);
+            writer.Write(this.ProcIc);
+            writer.Write(this.RoomId_And_PedDensity);
+            writer.Write(this.Unknown_3h);
             writer.Write(this.Unknown_4h);
+            writer.Write(this.MaterialColorIndex);
+            writer.Write(this.Unknown_6h);
         }
     }
 }
