@@ -1,0 +1,258 @@
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Runtime.InteropServices;
+using System.Text;
+using RageLib.GTA5.Cryptography;
+using RageLib.GTA5.Utilities;
+using RageLib.Hash;
+using RageLib.Resources.GTA5;
+using RageLib.Resources.GTA5.PC.Meta;
+
+namespace GenerateMetaEnumsAndStructs
+{
+    class Program
+    {
+        static Dictionary<int, string> Hashes = new Dictionary<int, string>();
+
+        static void Main(string[] args)
+        {
+            GTA5Constants.LoadFromPath(".");
+
+            Console.Error.Write("GTAV Directory: ");
+
+            string GTAVDir = Console.ReadLine();
+
+            HashEmbeddedStrings();
+            SaveMetaNames();
+
+            var enums = new Dictionary<int, EnumInfo>();
+            var structs = new Dictionary<int, StructureInfo>();
+            var sbe = new StringBuilder();
+            var sbs = new StringBuilder();
+
+            sbe.AppendLine("\t// Enums\n");
+            sbs.AppendLine("\t// Structures\n");
+
+            ArchiveUtilities.ForEachFile(GTAVDir, (fullName, file, encryption) =>
+            {
+                if(file.Name.EndsWith(".ymap") || file.Name.EndsWith(".ytyp"))
+                {
+                    using (MemoryStream ms = new MemoryStream())
+                    {
+                        file.Export(ms);
+
+                        try
+                        {
+                            var res = new ResourceFile_GTA5_pc<MetaFile>();
+
+                            res.Load(ms);
+
+                            var meta = res.ResourceData;
+
+                            GetEnums(meta, enums, sbe);
+                            GetStructures(meta, structs, sbs);
+                        }
+                        catch (Exception e)
+                        {
+                        }
+
+                        var sb = new StringBuilder();
+
+                        sb.AppendLine("using RageLib.GTA5.Resources.PC.Meta;\n");
+                        sb.AppendLine("namespace RageLib.Resources.GTA5.PC.Meta");
+                        sb.AppendLine("{");
+
+                        sb.Append(sbe);
+                        sb.Append(sbs);
+
+                        sb.AppendLine("}");
+
+                        File.WriteAllText("MetaTypes.cs", sb.ToString());
+
+                    }
+                }
+            });
+        }
+
+        static void GetEnums(MetaFile meta, Dictionary<int, EnumInfo> enums, StringBuilder sb)
+        {
+            if (meta.EnumInfos != null)
+            {
+                foreach (var ei in meta.EnumInfos)
+                {
+                    if (!enums.ContainsKey(ei.EnumKey))
+                    {
+                        var enumName = GetSafeName(ei.EnumNameHash, ei.EnumKey);
+
+                        Console.Error.WriteLine("ENUM   " + enumName);
+
+                        sb.AppendFormat("\tpublic enum {0} // Key : {1}\n", enumName, ei.EnumKey);
+                        sb.AppendLine("\t{");
+
+                        foreach (var entry in ei.Entries)
+                        {
+                            string entryName = GetSafeName(entry.EntryNameHash, entry.EntryValue);
+                            sb.AppendFormat("\t\t{0} = {1},\n", entryName, entry.EntryValue);
+                        }
+
+                        sb.AppendLine("\t}\n");
+
+
+                        enums.Add(ei.EnumKey, ei);
+                    }
+                }
+            }
+        }
+
+        static void GetStructures(MetaFile meta, Dictionary<int, StructureInfo> structs, StringBuilder sb)
+        {
+            if (meta.StructureInfos != null)
+            {
+                foreach (var si in meta.StructureInfos)
+                {
+                    if (!structs.ContainsKey(si.StructureKey))
+                    {
+                        var structureName = GetSafeName(si.StructureNameHash, si.StructureKey);
+
+                        Console.Error.WriteLine("STRUCT " + structureName);
+
+                        sb.AppendFormat("\tpublic struct {0} // {1} bytes, Key:{2}\n", structureName, si.StructureLength.ToString(), si.StructureKey.ToString());
+                        sb.AppendLine("\t{");
+
+                        foreach (var entry in si.Entries)
+                        {
+                            if ((entry.DataOffset == 0) && (entry.EntryNameHash == (int) MetaName.ARRAYINFO)) //referred to by array
+                            {
+                            }
+                            else
+                            {
+                                string sename = GetSafeName(entry.EntryNameHash, entry.ReferenceKey);
+                                string format = "\t\tpublic {0} {1}; //{2}   {3}\n";
+
+                                if (entry.DataType == StructureEntryDataType.Array)
+                                {
+                                    var structentry = si.Entries[entry.ReferenceTypeIndex];
+
+                                    var typename = "Array_" + GetCSharpTypeName(structentry.DataType);
+
+                                    sb.AppendFormat(format, typename , sename, entry.DataOffset, entry.DataType.ToString() + ": " + entry.ReferenceKey.ToString() + ": " + entry.EntryNameHash.ToString() + "  {" + structentry.DataOffset.ToString() + ": " + structentry.DataType.ToString() + ": " + structentry.ReferenceKey.ToString() + ": " + structentry.EntryNameHash.ToString() + " }");;
+                                }
+                                else if (entry.DataType == StructureEntryDataType.Structure)
+                                {
+                                    var typename = GetSafeName(entry.ReferenceKey, entry.ReferenceTypeIndex);
+                                    sb.AppendFormat(format, typename, sename, entry.DataOffset, entry.DataType.ToString() + ": " + entry.ReferenceKey.ToString() + ": " + entry.EntryNameHash.ToString());
+
+                                }
+                                else
+                                {
+                                    var typename = GetCSharpTypeName(entry.DataType);
+                                    sb.AppendFormat(format, typename, sename, entry.DataOffset, entry.DataType.ToString() + ": " + entry.ReferenceKey.ToString() + ": " + entry.EntryNameHash.ToString());
+                                }
+                            }
+                        }
+
+                        sb.AppendLine("\t}\n");
+
+                        structs.Add(si.StructureKey, si);
+                    }
+                }
+
+            }
+        }
+
+        static void SaveMetaNames()
+        {
+            var sb = new StringBuilder();
+
+            sb.AppendLine("namespace RageLib.Resources.GTA5.PC.Meta");
+            sb.AppendLine("{");
+            sb.AppendLine("\tpublic enum MetaName : int");
+            sb.AppendLine("\t{");
+
+            foreach (var entry in Hashes)
+                sb.AppendFormat("\t\t{0} = {1},", entry.Value, entry.Key);
+
+            sb.AppendLine("\t}");
+            sb.AppendLine("}");
+
+            File.WriteAllText("MetaNames.cs", sb.ToString());
+        }
+
+        static void HashEmbeddedStrings()
+        {
+            var metanames = Resource.metanames.Split('\n');
+
+            for (int i = 0; i < metanames.Length; i++)
+            {
+                int hash = (int)Jenkins.Hash(metanames[i]);
+
+                if (!String.IsNullOrEmpty(metanames[i]) && !Hashes.ContainsKey(hash))
+                    Hashes.Add(hash, metanames[i]);
+            }
+        }
+
+        static string GetSafeName(int hash, int key)
+        {
+            string name = GetString(hash);
+
+            if (string.IsNullOrEmpty(name))
+                name = "Unk_" + (uint) key;
+
+            if (!char.IsLetter(name[0]))
+                name = "Unk_" + name;
+
+            return name;
+        }
+
+        static string GetString(int hash)
+        {
+            string str;
+
+            if(!Hashes.TryGetValue(hash, out str))
+                str = ((uint) hash).ToString();
+
+            return str;
+        }
+
+        static int GetHash(string name)
+        {
+            return Hashes.FirstOrDefault(x => x.Value == name).Key;
+        }
+
+        static string GetCSharpTypeName(StructureEntryDataType t)
+        {
+            switch (t)
+            {
+                case StructureEntryDataType.Boolean: return "bool";
+                case StructureEntryDataType.SignedByte: return "sbyte";
+                case StructureEntryDataType.UnsignedByte: return "byte";
+                case StructureEntryDataType.SignedShort: return "short";
+                case StructureEntryDataType.UnsignedShort: return "ushort";
+                case StructureEntryDataType.SignedInt: return "int";
+                case StructureEntryDataType.UnsignedInt: return "uint";
+                case StructureEntryDataType.Float: return "float";
+                case StructureEntryDataType.Float_XYZ: return "RAGE_Vector3";
+                case StructureEntryDataType.Float_XYZW: return "RAGE_Vector4";
+
+                case StructureEntryDataType.Hash: return "uint"; //uint hashes...
+                case StructureEntryDataType.ByteEnum: return "byte"; //convert to enum later..
+                case StructureEntryDataType.IntEnum: return "int";
+                case StructureEntryDataType.ShortFlags: return "short";
+                case StructureEntryDataType.IntFlags1: return "int";
+                case StructureEntryDataType.IntFlags2: return "int";
+
+                case StructureEntryDataType.Array:
+                case StructureEntryDataType.ArrayOfChars:
+                case StructureEntryDataType.ArrayOfBytes:
+                case StructureEntryDataType.DataBlockPointer:
+                case StructureEntryDataType.CharPointer:
+                case StructureEntryDataType.StructurePointer:
+                case StructureEntryDataType.Structure:
+                default:
+                    return t.ToString();
+            }
+        }
+    }
+}
