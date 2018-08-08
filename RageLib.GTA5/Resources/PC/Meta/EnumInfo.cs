@@ -39,6 +39,22 @@ namespace RageLib.Resources.GTA5.PC.Meta
         // reference data
         public ResourceSimpleArray<EnumEntryInfo> Entries;
 
+        public EnumInfo()
+        {
+
+        }
+
+        public EnumInfo(int enumNameHash, int enumKey, long entriesPointer, int Unkown_14h, ResourceSimpleArray<EnumEntryInfo> entries)
+        {
+            this.EnumNameHash = enumNameHash;
+            this.EnumKey = enumKey;
+            this.EntriesPointer = EntriesPointer;
+            this.EntriesCount = entries.Count;
+            this.Unknown_14h = Unkown_14h;
+
+            this.Entries = entries;
+        }
+
         /// <summary>
         /// Reads the data-block from a stream.
         /// </summary>

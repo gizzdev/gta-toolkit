@@ -61,6 +61,21 @@ namespace RageLib.Resources.GTA5.PC.Meta
         public short ReferenceTypeIndex { get; set; }
         public int ReferenceKey { get; set; }
 
+        public StructureEntryInfo()
+        {
+
+        }
+
+        public StructureEntryInfo(int entryNameHash, int dataOffset, StructureEntryDataType structureEntryDataType, byte unknown_9h, short referenceTypeIndex, int referenceKey)
+        {
+            this.EntryNameHash = entryNameHash;
+            this.DataOffset = dataOffset;
+            this.DataType = structureEntryDataType;
+            this.Unknown_9h = unknown_9h;
+            this.ReferenceTypeIndex = referenceTypeIndex;
+            this.ReferenceKey = referenceKey;
+        }
+
         /// <summary>
         /// Reads the data-block from a stream.
         /// </summary>

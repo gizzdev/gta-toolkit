@@ -129,6 +129,12 @@ namespace RageLib.Resources.GTA5
             deflateStream.Close();
         }
 
+        public void Load(byte[] data)
+        {
+            var ms = new MemoryStream(data);
+            this.Load(ms);
+        }
+
         public void Save(string fileName)
         {
             using (var fileStream = new FileStream(fileName, FileMode.Create))
@@ -176,6 +182,14 @@ namespace RageLib.Resources.GTA5
             deflateStream.Flush();
             deflateStream.Close();
         }
+
+        public byte[] Save()
+        {
+            var ms = new MemoryStream();
+            this.Save(ms);
+            return ms.ToArray();
+        }
+
 
         public static bool IsResourceFile(string fileName)
         {

@@ -30,6 +30,19 @@ namespace RageLib.Resources.GTA5.PC.Meta
         public int EntryNameHash { get; set; }
         public int EntryValue { get; set; }
 
+        public EnumEntryInfo()
+        {
+
+        }
+
+        public EnumEntryInfo(int entryNameHash, int entryValue)
+        {
+            this.EntryNameHash = entryNameHash;
+            this.EntryValue = entryValue;
+
+        }
+
+
         /// <summary>
         /// Reads the data-block from a stream.
         /// </summary>

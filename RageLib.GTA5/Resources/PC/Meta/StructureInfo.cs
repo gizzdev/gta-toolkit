@@ -42,6 +42,24 @@ namespace RageLib.Resources.GTA5.PC.Meta
         // reference data
         public ResourceSimpleArray<StructureEntryInfo> Entries;
 
+        public StructureInfo()
+        {
+
+        }
+
+        public StructureInfo(int structureNameHash, int structureKey, int unknown_8h, int unknown_Ch, long entriesPointer, int structureLength, short unknown_1Ch, ResourceSimpleArray<StructureEntryInfo> entries)
+        {
+            this.StructureNameHash = structureNameHash;
+            this.StructureKey = structureKey;
+            this.Unknown_8h = unknown_8h;
+            this.Unknown_Ch = unknown_Ch;
+            this.EntriesPointer = entriesPointer;
+            this.StructureLength = structureLength;
+            this.Unknown_1Ch = unknown_1Ch;
+            this.EntriesCount = (short)entries.Count;
+
+            this.Entries = entries;
+        }
         /// <summary>
         /// Reads the data-block from a stream.
         /// </summary>

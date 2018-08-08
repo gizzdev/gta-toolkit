@@ -37,28 +37,14 @@ namespace RageLib.Resources.GTA5.PC.Bounds
 
         public int RoomId
         {
-            get
-            {
-                return 0b00011111 & this.RoomId_And_PedDensity;
-            }
-            
-            set
-            {
-                this.RoomId_And_PedDensity = (byte) ((this.RoomId_And_PedDensity & ~0b00011111) | value);
-            }
+            get { return 0b00011111 & this.RoomId_And_PedDensity; }
+            set { this.RoomId_And_PedDensity = (byte) ((this.RoomId_And_PedDensity & ~0b00011111) | value); }
         }
 
         public int PedDensity
         {
-            get
-            {
-                return (0b11100000 & this.RoomId_And_PedDensity) >> 5;
-            }
-
-            set
-            {
-                this.RoomId_And_PedDensity = (byte)((this.RoomId_And_PedDensity & ~0b11100000) | value << 5);
-            }
+            get { return (0b11100000 & this.RoomId_And_PedDensity) >> 5; }
+            set { this.RoomId_And_PedDensity = (byte)((this.RoomId_And_PedDensity & ~0b11100000) | value << 5); }
         }
 
         /// <summary>

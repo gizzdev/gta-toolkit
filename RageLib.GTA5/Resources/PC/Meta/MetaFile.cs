@@ -42,9 +42,9 @@ namespace RageLib.Resources.GTA5.PC.Meta
         public long DataBlocksPointer { get; private set; }
         public long NamePointer { get; private set; }
         public long UselessPointer { get; private set; }
-        public short StructureInfosCount { get; private set; }
-        public short EnumInfosCount { get; private set; }
-        public short DataBlocksCount { get; private set; }
+        public short StructureInfosCount { get; set; }
+        public short EnumInfosCount { get; set; }
+        public short DataBlocksCount { get; set; }
         public short Unknown_4Eh { get; set; } = 0x0000;
         public int Unknown_50h { get; set; } = 0x00000000;
         public int Unknown_54h { get; set; } = 0x00000000;

@@ -31,7 +31,7 @@ namespace RageLib.Resources.GTA5.PC.Meta
 
         // structure data
         public int StructureNameHash { get; set; }
-        public int DataLength { get; private set; }
+        public int DataLength { get; set; }
         public long DataPointer { get; private set; }
 
         // reference data

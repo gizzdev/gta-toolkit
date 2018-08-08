@@ -43,6 +43,27 @@ namespace RageLib.Resources
         public uint Unknown_28h;
         public uint Unknown_2Ch;
 
+        public RAGE_Matrix3()
+        {
+
+        }
+
+        public RAGE_Matrix3(uint Unknown_0h, uint Unknown_4h, uint Unknown_8h, uint Unknown_Ch, uint Unknown_10h, uint Unknown_14h, uint Unknown_18h, uint Unknown_1Ch, uint Unknown_20h, uint Unknown_24h, uint Unknown_28h, uint Unknown_2Ch)
+        {
+            this.Unknown_0h = Unknown_0h;
+            this.Unknown_4h = Unknown_4h;
+            this.Unknown_8h = Unknown_8h;
+            this.Unknown_Ch = Unknown_Ch;
+            this.Unknown_10h = Unknown_10h;
+            this.Unknown_14h = Unknown_14h;
+            this.Unknown_18h = Unknown_18h;
+            this.Unknown_1Ch = Unknown_1Ch;
+            this.Unknown_20h = Unknown_20h;
+            this.Unknown_24h = Unknown_24h;
+            this.Unknown_28h = Unknown_28h;
+            this.Unknown_2Ch = Unknown_2Ch;
+        }
+
         /// <summary>
         /// Reads the data-block from a stream.
         /// </summary>

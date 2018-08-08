@@ -35,6 +35,19 @@ namespace RageLib.Resources
         public float x3;
         public float x4;
 
+        public RAGE_Vector4()
+        {
+
+        }
+
+        public RAGE_Vector4(float x1, float x2, float x3, float x4)
+        {
+            this.x1 = x1;
+            this.x2 = x2;
+            this.x3 = x3;
+            this.x4 = x4;
+        }
+
         /// <summary>
         /// Reads the data-block from a stream.
         /// </summary>
