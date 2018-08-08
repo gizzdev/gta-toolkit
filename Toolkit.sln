@@ -27,6 +27,12 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "_TestTools.GTA5", "_TestToo
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExtractKeysFromDump", "_TestTools.GTA5\ExtractKeysFromDump\ExtractKeysFromDump.csproj", "{D6DC4413-15ED-4511-B0DB-D287EA1FDC99}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GenerateMetaEnumsAndStructs", "_TestTools.GTA5\GenerateMetaEnumsAndStructs\GenerateMetaEnumsAndStructs.csproj", "{AA6C01BA-97C3-498E-8274-16CF113B5B3D}"
+	ProjectSection(ProjectDependencies) = postProject
+		{569CDE34-96F0-44BE-BD31-62B6A43C85B8} = {569CDE34-96F0-44BE-BD31-62B6A43C85B8}
+		{718F3F76-51AE-46CB-B11B-027B9BBC8A0B} = {718F3F76-51AE-46CB-B11B-027B9BBC8A0B}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -91,6 +97,7 @@ Global
 		{755AB64B-16B4-4C90-AA3B-BFF448E5A21E}.Debug|x64.Build.0 = Debug|x64
 		{755AB64B-16B4-4C90-AA3B-BFF448E5A21E}.Debug|x86.ActiveCfg = Debug|x64
 		{755AB64B-16B4-4C90-AA3B-BFF448E5A21E}.Release|Any CPU.ActiveCfg = Release|x64
+		{755AB64B-16B4-4C90-AA3B-BFF448E5A21E}.Release|Any CPU.Build.0 = Release|x64
 		{755AB64B-16B4-4C90-AA3B-BFF448E5A21E}.Release|x64.ActiveCfg = Release|x64
 		{755AB64B-16B4-4C90-AA3B-BFF448E5A21E}.Release|x64.Build.0 = Release|x64
 		{755AB64B-16B4-4C90-AA3B-BFF448E5A21E}.Release|x86.ActiveCfg = Release|x64
@@ -142,6 +149,18 @@ Global
 		{D6DC4413-15ED-4511-B0DB-D287EA1FDC99}.Release|x64.Build.0 = Release|Any CPU
 		{D6DC4413-15ED-4511-B0DB-D287EA1FDC99}.Release|x86.ActiveCfg = Release|Any CPU
 		{D6DC4413-15ED-4511-B0DB-D287EA1FDC99}.Release|x86.Build.0 = Release|Any CPU
+		{AA6C01BA-97C3-498E-8274-16CF113B5B3D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AA6C01BA-97C3-498E-8274-16CF113B5B3D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AA6C01BA-97C3-498E-8274-16CF113B5B3D}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{AA6C01BA-97C3-498E-8274-16CF113B5B3D}.Debug|x64.Build.0 = Debug|Any CPU
+		{AA6C01BA-97C3-498E-8274-16CF113B5B3D}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{AA6C01BA-97C3-498E-8274-16CF113B5B3D}.Debug|x86.Build.0 = Debug|Any CPU
+		{AA6C01BA-97C3-498E-8274-16CF113B5B3D}.Release|Any CPU.ActiveCfg = Release|x64
+		{AA6C01BA-97C3-498E-8274-16CF113B5B3D}.Release|Any CPU.Build.0 = Release|x64
+		{AA6C01BA-97C3-498E-8274-16CF113B5B3D}.Release|x64.ActiveCfg = Release|Any CPU
+		{AA6C01BA-97C3-498E-8274-16CF113B5B3D}.Release|x64.Build.0 = Release|Any CPU
+		{AA6C01BA-97C3-498E-8274-16CF113B5B3D}.Release|x86.ActiveCfg = Release|Any CPU
+		{AA6C01BA-97C3-498E-8274-16CF113B5B3D}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -152,6 +171,10 @@ Global
 		{755AB64B-16B4-4C90-AA3B-BFF448E5A21E} = {12632945-ACEA-493E-AE35-36FBC4AD2FF1}
 		{EE0B585C-081B-4E36-AF53-7F4E4D5E7A65} = {36EED776-1944-4C7B-A662-FBB1E36B6773}
 		{D6DC4413-15ED-4511-B0DB-D287EA1FDC99} = {E240F677-DCC5-4C33-B370-119A9E4A5144}
+		{AA6C01BA-97C3-498E-8274-16CF113B5B3D} = {E240F677-DCC5-4C33-B370-119A9E4A5144}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {C9CDE6CC-6CE0-414B-974B-C0E0300AE720}
 	EndGlobalSection
 	GlobalSection(Performance) = preSolution
 		HasPerformanceSessions = true

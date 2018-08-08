@@ -31,9 +31,14 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="HtmlAgilityPack, Version=1.4.9.5, Culture=neutral, PublicKeyToken=bd319b19eaf3b43a, processorArchitecture=MSIL">
-      <HintPath>..\packages\HtmlAgilityPack.1.4.9.5\lib\Net45\HtmlAgilityPack.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="HtmlAgilityPack, Version=1.8.5.0, Culture=neutral, PublicKeyToken=bd319b19eaf3b43a, processorArchitecture=MSIL">
+      <HintPath>..\packages\HtmlAgilityPack.1.8.5\lib\Net45\HtmlAgilityPack.dll</HintPath>
+    </Reference>
+    <Reference Include="SharpDX, Version=4.1.0.0, Culture=neutral, PublicKeyToken=b4dcf0f35e5521f1, processorArchitecture=MSIL">
+      <HintPath>..\packages\SharpDX.4.1.0\lib\net45\SharpDX.dll</HintPath>
+    </Reference>
+    <Reference Include="SharpDX.Mathematics, Version=4.1.0.0, Culture=neutral, PublicKeyToken=b4dcf0f35e5521f1, processorArchitecture=MSIL">
+      <HintPath>..\packages\SharpDX.Mathematics.4.1.0\lib\net45\SharpDX.Mathematics.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -212,10 +217,61 @@
     <Compile Include="Resources\PC\Fragments\Unknown_F_002.cs" />
     <Compile Include="Resources\PC\Fragments\Unknown_F_003.cs" />
     <Compile Include="Resources\PC\Fragments\Unknown_F_004.cs" />
+    <Compile Include="Resources\PC\GameFiles\GameFileBase.cs" />
+    <Compile Include="Resources\PC\GameFiles\YmapFile.cs" />
     <Compile Include="Resources\PC\Meta\DataBlock.cs" />
     <Compile Include="Resources\PC\Meta\EnumEntryInfo.cs" />
     <Compile Include="Resources\PC\Meta\EnumInfo.cs" />
+    <Compile Include="Resources\PC\Meta\ExtendedTypes\CBaseArchetypeDef.cs" />
+    <Compile Include="Resources\PC\Meta\ExtendedTypes\CBlockDesc.cs" />
+    <Compile Include="Resources\PC\Meta\ExtendedTypes\CCarGen.cs" />
+    <Compile Include="Resources\PC\Meta\ExtendedTypes\CCompositeEntityType.cs" />
+    <Compile Include="Resources\PC\Meta\ExtendedTypes\CDistantLODLight.cs" />
+    <Compile Include="Resources\PC\Meta\ExtendedTypes\CEntityDef.cs" />
+    <Compile Include="Resources\PC\Meta\ExtendedTypes\CExtensionDefAudioCollisionSettings.cs" />
+    <Compile Include="Resources\PC\Meta\ExtendedTypes\CExtensionDefAudioEmitter.cs" />
+    <Compile Include="Resources\PC\Meta\ExtendedTypes\CExtensionDefBuoyancy.cs" />
+    <Compile Include="Resources\PC\Meta\ExtendedTypes\CExtensionDefDoor.cs" />
+    <Compile Include="Resources\PC\Meta\ExtendedTypes\CExtensionDefExplosionEffect.cs" />
+    <Compile Include="Resources\PC\Meta\ExtendedTypes\CExtensionDefExpression.cs" />
+    <Compile Include="Resources\PC\Meta\ExtendedTypes\CExtensionDefLadder.cs" />
+    <Compile Include="Resources\PC\Meta\ExtendedTypes\CExtensionDefLightEffect.cs" />
+    <Compile Include="Resources\PC\Meta\ExtendedTypes\CExtensionDefLightShaft.cs" />
+    <Compile Include="Resources\PC\Meta\ExtendedTypes\CExtensionDefParticleEffect.cs" />
+    <Compile Include="Resources\PC\Meta\ExtendedTypes\CExtensionDefProcObject.cs" />
+    <Compile Include="Resources\PC\Meta\ExtendedTypes\CExtensionDefSpawnPoint.cs" />
+    <Compile Include="Resources\PC\Meta\ExtendedTypes\CExtensionDefSpawnPointOverride.cs" />
+    <Compile Include="Resources\PC\Meta\ExtendedTypes\CExtensionDefWindDisturbance.cs" />
+    <Compile Include="Resources\PC\Meta\ExtendedTypes\CLightAttrDef.cs" />
+    <Compile Include="Resources\PC\Meta\ExtendedTypes\CLODLight.cs" />
+    <Compile Include="Resources\PC\Meta\ExtendedTypes\CMapData.cs" />
+    <Compile Include="Resources\PC\Meta\ExtendedTypes\CMapTypes.cs" />
+    <Compile Include="Resources\PC\Meta\ExtendedTypes\CMloArchetypeDef.cs" />
+    <Compile Include="Resources\PC\Meta\ExtendedTypes\CMloEntitySet.cs" />
+    <Compile Include="Resources\PC\Meta\ExtendedTypes\CMloInstanceDef.cs" />
+    <Compile Include="Resources\PC\Meta\ExtendedTypes\CMloPortalDef.cs" />
+    <Compile Include="Resources\PC\Meta\ExtendedTypes\CMloRoomDef.cs" />
+    <Compile Include="Resources\PC\Meta\ExtendedTypes\CMloTimeCycleModifier.cs" />
+    <Compile Include="Resources\PC\Meta\ExtendedTypes\CTimeArchetypeDef.cs" />
+    <Compile Include="Resources\PC\Meta\ExtendedTypes\CTimeCycleModifier.cs" />
+    <Compile Include="Resources\PC\Meta\ExtendedTypes\MetaStructureWrapper.cs" />
+    <Compile Include="Resources\PC\Meta\ExtendedTypes\rage__fwGrassInstanceListDef.cs" />
+    <Compile Include="Resources\PC\Meta\ExtendedTypes\rage__fwGrassInstanceListDef__InstanceData.cs" />
+    <Compile Include="Resources\PC\Meta\ExtendedTypes\rage__fwInstancedMapData.cs" />
+    <Compile Include="Resources\PC\Meta\ExtendedTypes\rage__phVerletClothCustomBounds.cs" />
+    <Compile Include="Resources\PC\Meta\ExtendedTypes\rage__spdAABB.cs" />
+    <Compile Include="Resources\PC\Meta\ExtendedTypes\Unk_1701774085.cs" />
+    <Compile Include="Resources\PC\Meta\ExtendedTypes\Unk_1980345114.cs" />
+    <Compile Include="Resources\PC\Meta\ExtendedTypes\Unk_2741784237.cs" />
+    <Compile Include="Resources\PC\Meta\ExtendedTypes\Unk_3430328684.cs" />
+    <Compile Include="Resources\PC\Meta\ExtendedTypes\Unk_975711773.cs" />
+    <Compile Include="Resources\PC\Meta\ExtendedTypes\VECTOR3.cs" />
+    <Compile Include="Resources\PC\Meta\MetaBaseTypes.cs" />
+    <Compile Include="Resources\PC\Meta\MetaBuilder.cs" />
     <Compile Include="Resources\PC\Meta\MetaFile.cs" />
+    <Compile Include="Resources\PC\Meta\MetaNames.cs" />
+    <Compile Include="Resources\PC\Meta\MetaTypes.cs" />
+    <Compile Include="Resources\PC\Meta\MetaUtils.cs" />
     <Compile Include="Resources\PC\Meta\StructureEntryInfo.cs" />
     <Compile Include="Resources\PC\Meta\StructureInfo.cs" />
     <Compile Include="Resources\PC\Navigations\AdjPoly.cs" />
