@@ -20,7 +20,6 @@
     THE SOFTWARE.
 */
 
-
 namespace RageLib.GTA5.RBF
 {
     public class RbfEntryDescription

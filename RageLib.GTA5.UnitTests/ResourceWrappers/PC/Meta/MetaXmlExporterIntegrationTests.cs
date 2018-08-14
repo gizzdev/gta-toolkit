@@ -21,7 +21,6 @@
 */
 
 using NUnit.Framework;
-using RageLib.GTA5.ResourceWrappers.PC.Meta;
 using System;
 using System.IO;
 using System.Reflection;
@@ -29,6 +28,7 @@ using System.Xml;
 
 namespace RageLib.GTA5.Tests.ResourceWrappers.PC.Meta
 {
+    /*
     [TestFixture]
     public class MetaXmlExporterIntegrationTests
     {
@@ -108,4 +108,5 @@ namespace RageLib.GTA5.Tests.ResourceWrappers.PC.Meta
             }
         }
     }
+    */
 }

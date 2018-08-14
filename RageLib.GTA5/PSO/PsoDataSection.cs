@@ -26,23 +26,30 @@ namespace RageLib.GTA5.PSO
 {
     public class PsoDataSection
     {
+        public uint Ident { get; set; } = 0x5053494E;
+        public int Length { get; private set; }
         public byte[] Data { get; set; }
 
         public void Read(DataReader reader)
         {
-            var Ident = reader.ReadUInt32();
-            var Length = reader.ReadInt32();
+            Ident = reader.ReadUInt32();
+            Length = reader.ReadInt32();
             reader.Position -= 8;
-            this.Data = reader.ReadBytes(Length);
+            Data = reader.ReadBytes(Length);
         }
 
         public void Write(DataWriter writer)
-        {      
+        {
             writer.Write(Data);
             writer.Position -= Data.Length;
             writer.Write((uint)0x5053494E);
             writer.Write((uint)(Data.Length));
             writer.Position += Data.Length - 8;
+        }
+
+        public override string ToString()
+        {
+            return Ident.ToString() + ": " + Length.ToString();
         }
     }
 }

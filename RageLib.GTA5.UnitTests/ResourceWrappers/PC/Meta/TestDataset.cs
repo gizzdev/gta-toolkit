@@ -20,13 +20,16 @@
     THE SOFTWARE.
 */
 
-using RageLib.GTA5.ResourceWrappers.PC.Meta.Types;
 using RageLib.Resources.Common;
 using RageLib.Resources.GTA5.PC.Meta;
 using System.Collections.Generic;
 
 namespace RageLib.GTA5.Tests.ResourceWrappers.PC.Meta
 {
+
+    // TODO : make new unit tests
+
+    /*
     public class TestDataset
     {
         public static MetaStructure MakeDataset()
@@ -402,4 +405,5 @@ namespace RageLib.GTA5.Tests.ResourceWrappers.PC.Meta
             return pointerArray;
         }
     }
+    */
 }

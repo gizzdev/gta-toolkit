@@ -1,5 +1,5 @@
 /*
-    Copyright(c) 2015 Neodymium
+    Copyright(c) 2016 Neodymium
 
     Permission is hereby granted, free of charge, to any person obtaining a copy
     of this software and associated documentation files (the "Software"), to deal
@@ -19,6 +19,8 @@
     OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
     THE SOFTWARE.
 */
+
+using SharpDX;
 
 namespace RageLib.Resources
 {
@@ -70,6 +72,22 @@ namespace RageLib.Resources
             writer.Write(this.x2);
             writer.Write(this.x3);
             writer.Write(this.x4);
+        }
+
+        public static explicit operator Vector4(RAGE_Vector4 v)
+        {
+            return new Vector4(v.x1, v.x2, v.x3, v.x4);
+        }
+
+        public static explicit operator RAGE_Vector4(Vector4 v)
+        {
+            return new RAGE_Vector4()
+            {
+                x1 = v.X,
+                x2 = v.Y,
+                x3 = v.Z,
+                x4 = v.W,
+            };
         }
     }
 }

@@ -21,15 +21,42 @@
 */
 
 using RageLib.Data;
+using RageLib.Resources.GTA5.PC.Meta;
 using System;
 using System.Collections.Generic;
 using System.IO;
 
 namespace RageLib.GTA5.PSO
 {
+    public enum DataType : byte
+    {
+        Bool = 0x00,
+        SByte = 0x01,
+        UByte = 0x02,
+        SShort = 0x03,
+        UShort = 0x04,
+        SInt = 0x05,
+        UInt = 0x06,
+        Float = 0x07,
+        Float2 = 0x08,
+        Float3 = 0x09,
+        Float4 = 0x0a,
+        String = 0x0b,
+        Structure = 0x0c,
+        Array = 0x0d,
+        Enum = 0x0e,
+        Flags = 0x0f,
+        Map = 0x10,
+        Float3a = 0x14,
+        Float4a = 0x15,
+        HFloat = 0x1e,
+        Long = 0x20,
+    }
+
     public class PsoDefinitionSection
     {
         public int Ident { get; private set; } = 0x50534348;
+        public int Length { get; set; }
         public uint Count;
 
         public List<PsoElementIndexInfo> EntriesIdx;
@@ -37,8 +64,8 @@ namespace RageLib.GTA5.PSO
 
         public void Read(DataReader reader)
         {
-            Ident = reader.ReadInt32();
-            var Length = reader.ReadInt32();
+            this.Ident = reader.ReadInt32();
+            this.Length = reader.ReadInt32();
             this.Count = reader.ReadUInt32();
 
             this.EntriesIdx = new List<PsoElementIndexInfo>();
@@ -60,12 +87,14 @@ namespace RageLib.GTA5.PSO
                 {
                     var entry = new PsoStructureInfo();
                     entry.Read(reader);
+                    entry.IndexInfo = EntriesIdx[i];
                     Entries.Add(entry);
                 }
                 else if (type == 1)
                 {
                     var entry = new PsoEnumInfo();
                     entry.Read(reader);
+                    entry.IndexInfo = EntriesIdx[i];
                     Entries.Add(entry);
                 }
                 else
@@ -134,6 +163,8 @@ namespace RageLib.GTA5.PSO
 
     public abstract class PsoElementInfo
     {
+        public PsoElementIndexInfo IndexInfo { get; set; }
+
         public abstract void Read(DataReader reader);
 
         public abstract void Write(DataWriter writer);
@@ -147,6 +178,21 @@ namespace RageLib.GTA5.PSO
         public int StructureLength { get; set; }
         public uint Unk_Ch { get; set; } = 0x00000000;
         public List<PsoStructureEntryInfo> Entries { get; set; } = new List<PsoStructureEntryInfo>();
+
+        public PsoStructureInfo()
+        {
+
+        }
+
+        public PsoStructureInfo(byte type, byte unk, int structureLength, uint unk_ch, List<PsoStructureEntryInfo> entries)
+        {
+            this.Type = type;
+            this.Unk = unk;
+            this.StructureLength = structureLength;
+            this.Unk_Ch = unk_ch;
+            this.Entries = entries;
+            this.EntriesCount = (short) entries.Count;
+        }
 
         public override void Read(DataReader reader)
         {
@@ -181,31 +227,27 @@ namespace RageLib.GTA5.PSO
                 entry.Write(writer);
             }
         }
-    }
 
-    public enum DataType : byte
-    {
-        Boolean = 0x00,
-        LONG_01h = 0x01,
-        Byte = 0x02,
-        SHORT_03h = 0x03,
-        SHORT_04h = 0x04,
-        INT_05h = 0x05,
-        Integer = 0x06,
-        Float = 0x07,
-        Float2 = 0x08,
-        TYPE_09h = 0x09,
-        Float4 = 0x0a,
-        String = 0x0b,
-        Structure = 0x0c,
-        Array = 0x0d,
-        Enum = 0x0e,
-        Flags = 0x0f,
-        Map = 0x10,
-        TYPE_14h = 0x14,
-        Float3 = 0x15,
-        SHORT_1Eh = 0x1e,
-        LONG_20h = 0x20
+        public PsoStructureEntryInfo FindEntry(MetaName name)
+        {
+            if (Entries != null)
+            {
+                foreach (var entry in Entries)
+                {
+                    if ((MetaName) entry.EntryNameHash == name) return entry;
+                }
+            }
+            return null;
+        }
+
+        public PsoStructureEntryInfo GetEntry(int id)
+        {
+            if ((Entries != null) && (id >= 0) && (id < Entries.Count))
+            {
+                return Entries[id];
+            }
+            return null;
+        }
     }
 
     public class PsoStructureEntryInfo
@@ -253,6 +295,18 @@ namespace RageLib.GTA5.PSO
         public int EntriesCount { get; private set; }
         public List<PsoEnumEntryInfo> Entries { get; set; }
 
+        public PsoEnumInfo()
+        {
+
+        }
+
+        public PsoEnumInfo(byte type, List<PsoEnumEntryInfo> entries)
+        {
+            this.Type = type;
+            this.Entries = entries;
+            this.EntriesCount = entries.Count;
+        }
+
         public override void Read(DataReader reader)
         {
             uint x = reader.ReadUInt32();
@@ -282,6 +336,21 @@ namespace RageLib.GTA5.PSO
                 entry.Write(writer);
             }
         }
+
+        public PsoEnumEntryInfo FindEntry(int val)
+        {
+            if (Entries == null) return null;
+            for (int i = 0; i < Entries.Count; i++)
+            {
+                var entry = Entries[i];
+                if (entry.EntryKey == val)
+                {
+                    return entry;
+                }
+            }
+            return null;
+        }
+
     }
 
     public class PsoEnumEntryInfo
@@ -290,7 +359,9 @@ namespace RageLib.GTA5.PSO
         public int EntryKey { get; set; }
 
         public PsoEnumEntryInfo()
-        { }
+        {
+
+        }
 
         public PsoEnumEntryInfo(int nameHash, int key)
         {

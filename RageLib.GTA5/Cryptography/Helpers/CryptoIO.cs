@@ -1,5 +1,5 @@
 ﻿/*
-    Copyright(c) 2015 Neodymium
+    Copyright(c) 2016 Neodymium
 
     Permission is hereby granted, free of charge, to any person obtaining a copy
     of this software and associated documentation files (the "Software"), to deal
@@ -27,6 +27,24 @@ namespace RageLib.GTA5.Cryptography.Helpers
 {
     public class CryptoIO
     {
+        public static byte[][] ReadNgKeys(byte[] data)
+        {
+            byte[][] result;
+
+            var ms = new MemoryStream(data);
+            var rd = new DataReader(ms);
+
+            result = new byte[101][];
+            for (int i = 0; i < 101; i++)
+            {
+                result[i] = rd.ReadBytes(272);
+            }
+
+            ms.Close();
+
+            return result;
+        }
+
         public static byte[][] ReadNgKeys(string fileName)
         {
             byte[][] result;
@@ -56,6 +74,35 @@ namespace RageLib.GTA5.Cryptography.Helpers
             }
 
             fs.Close();
+        }
+
+        public static uint[][][] ReadNgTables(byte[] data)
+        {
+            uint[][][] result;
+
+            var ms = new MemoryStream(data);
+            var rd = new DataReader(ms);
+
+            // 17 rounds...
+            result = new uint[17][][];
+            for (int i = 0; i < 17; i++)
+            {
+                // 16 bytes...
+                result[i] = new uint[16][];
+                for (int j = 0; j < 16; j++)
+                {
+                    // 256 entries...
+                    result[i][j] = new uint[256];
+                    for (int k = 0; k < 256; k++)
+                    {
+                        result[i][j][k] = rd.ReadUInt32();
+                    }
+                }
+            }
+
+            ms.Close();
+
+            return result;
         }
 
         public static uint[][][] ReadNgTables(string fileName)

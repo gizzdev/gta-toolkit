@@ -1,4 +1,26 @@
-﻿using System;
+﻿/*
+    Copyright(c) 2016 Neodymium
+
+    Permission is hereby granted, free of charge, to any person obtaining a copy
+    of this software and associated documentation files (the "Software"), to deal
+    in the Software without restriction, including without limitation the rights
+    to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+    copies of the Software, and to permit persons to whom the Software is
+    furnished to do so, subject to the following conditions:
+
+    The above copyright notice and this permission notice shall be included in
+    all copies or substantial portions of the Software.
+
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+    AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+    OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+    THE SOFTWARE.
+*/
+
+using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -7,7 +29,7 @@ using SharpDX;
 
 namespace RageLib.Resources.GTA5.PC.Meta
 {
-    class MetaUtils
+    public class MetaUtils
     {
         public static ushort SwapBytes(ushort x)
         {
@@ -40,6 +62,13 @@ namespace RageLib.Resources.GTA5.PC.Meta
             return BitConverter.ToSingle(a, 0);
         }
 
+        public static Vector2 SwapBytes(Vector2 v)
+        {
+            var x = SwapBytes(v.X);
+            var y = SwapBytes(v.Y);
+            return new Vector2(x, y);
+        }
+
         public static Vector3 SwapBytes(Vector3 v)
         {
             var x = SwapBytes(v.X);
@@ -54,41 +83,6 @@ namespace RageLib.Resources.GTA5.PC.Meta
             var z = SwapBytes(v.Z);
             var w = SwapBytes(v.W);
             return new Vector4(x, y, z, w);
-        }
-
-        public static DataBlock[] FindBlocks(MetaFile meta, MetaName name)
-        {
-            var blocks = new List<DataBlock>();
-
-            for (int i = 0; i < meta.DataBlocks.Count; i++)
-                if ((MetaName)meta.DataBlocks[i].StructureNameHash == name)
-                    blocks.Add(meta.DataBlocks[i]);
-
-            return blocks.ToArray();
-        }
-
-        public static DataBlock GetRootBlock(MetaFile meta, MetaName name)
-        {
-            DataBlock block = null;
-
-            int rootIndex = meta.RootBlockIndex - 1;
-
-            if ((rootIndex >= 0) && (rootIndex < meta.DataBlocks.Count) && (meta.DataBlocks.Data != null))
-                block = meta.DataBlocks[rootIndex];
-
-            return block;
-        }
-
-        public static DataBlock GetBlock(MetaFile meta, int id)
-        {
-            DataBlock block = null;
-
-            var index = id - 1;
-
-            if ((index >= 0) && (index < meta.DataBlocks.Count) && (meta.DataBlocks.Data != null))
-                block = meta.DataBlocks[index];
-
-            return block;
         }
 
         public static byte[] ConvertToBytes<T>(T item) where T : struct
@@ -144,12 +138,12 @@ namespace RageLib.Resources.GTA5.PC.Meta
             return ConvertData<T>(block.Data, offset);
         }
 
-        public static T[] ConvertArray_Structure<T>(MetaFile meta, Array_Structure array) where T : struct
+        public static T[] ConvertDataArray<T>(MetaFile meta, Array_Structure array) where T : struct
         {
-            return ConvertArray_Structure<T>(meta, array.Pointer, array.Count1);
+            return ConvertDataArray<T>(meta, array.Pointer, array.Count1);
         }
 
-        public static T[] ConvertArray_Structure<T>(MetaFile meta, uint pointer, uint count) where T : struct
+        public static T[] ConvertDataArray<T>(MetaFile meta, uint pointer, uint count) where T : struct
         {
             T[] items = new T[count];
             int itemSize = Marshal.SizeOf(typeof(T));
@@ -190,12 +184,11 @@ namespace RageLib.Resources.GTA5.PC.Meta
 
             }
 
-            return null;
+            return items;
 
         }
 
-
-        public static T[] ConvertArray_StructurePointer<T>(MetaFile meta, Array_StructurePointer array) where T : struct
+        public static T[] ConvertDataArray<T>(MetaFile meta, Array_StructurePointer array) where T : struct
         {
             uint count = array.Count1;
 
@@ -216,7 +209,7 @@ namespace RageLib.Resources.GTA5.PC.Meta
             {
                 var ptr = ptrs[i];
                 var offset = ptr.Offset;
-                var block = GetBlock(meta, ptr.BlockID);
+                var block = meta.GetBlock(ptr.BlockID);
 
                 if (block == null)
                     continue;
@@ -230,6 +223,18 @@ namespace RageLib.Resources.GTA5.PC.Meta
             return items;
         }
 
+        public static T[] ConvertDataArray<T>(byte[] data, int offset, int count) where T : struct
+        {
+            T[] items = new T[count];
+            int itemsize = Marshal.SizeOf(typeof(T));
+            for (int i = 0; i < count; i++)
+            {
+                int off = offset + i * itemsize;
+                items[i] = ConvertData<T>(data, off);
+            }
+            return items;
+        }
+
         public static T GetTypedData<T>(MetaFile meta, MetaName name) where T : struct
         {
             foreach (var block in meta.DataBlocks)
@@ -240,6 +245,51 @@ namespace RageLib.Resources.GTA5.PC.Meta
                 }
             }
             throw new Exception("Couldn't find " + name.ToString() + " block.");
+        }
+
+        public static T[] GetTypedDataArray<T>(MetaFile meta, MetaName name) where T : struct
+        {
+            if ((meta == null) || (meta.DataBlocks == null)) return null;
+
+            var datablocks = meta.DataBlocks.Data;
+
+            DataBlock startblock = null;
+            int startblockind = -1;
+            for (int i = 0; i < datablocks.Count; i++)
+            {
+                var block = datablocks[i];
+                if ((MetaName) block.StructureNameHash == name)
+                {
+                    startblock = block;
+                    startblockind = i;
+                    break;
+                }
+            }
+            if (startblock == null)
+            {
+                return null; //couldn't find the data.
+            }
+
+            int count = 0; //try figure out how many items there are, from the block size(s).
+            int itemsize = Marshal.SizeOf(typeof(T));
+            var currentblock = startblock;
+            int currentblockind = startblockind;
+            while (currentblock != null)
+            {
+                int blockitems = currentblock.DataLength / itemsize;
+                count += blockitems;
+                currentblockind++;
+                if (currentblockind >= datablocks.Count) break; //last block, can't go any further
+                currentblock = datablocks[currentblockind];
+                if ((MetaName) currentblock.StructureNameHash != name) break; //not the right block type, can't go further
+            }
+
+            if (count <= 0)
+            {
+                return null; //didn't find anything...
+            }
+
+            return ConvertDataArray<T>(meta, (uint)startblockind + 1, (uint)count);
         }
 
         public static string GetString(MetaFile meta, CharPointer ptr)
@@ -277,7 +327,7 @@ namespace RageLib.Resources.GTA5.PC.Meta
             MetaPOINTER[] ptrs = new MetaPOINTER[count];
             int ptrsize = Marshal.SizeOf(typeof(MetaPOINTER));
             int ptroffset = (int)array.PointerDataOffset;
-            var ptrblock = GetBlock(meta, (int)array.PointerDataId);
+            var ptrblock = meta.GetBlock((int)array.PointerDataId);
 
             if ((ptrblock == null) || (ptrblock.Data == null) || ((MetaName)ptrblock.StructureNameHash != MetaName.POINTER))
                 return null;
@@ -293,6 +343,74 @@ namespace RageLib.Resources.GTA5.PC.Meta
             return ptrs;
         }
 
+        public static string GetCSharpTypeName(StructureEntryDataType t)
+        {
+            switch (t)
+            {
+                case StructureEntryDataType.Boolean: return "bool";
+                case StructureEntryDataType.SignedByte: return "sbyte";
+                case StructureEntryDataType.UnsignedByte: return "byte";
+                case StructureEntryDataType.SignedShort: return "short";
+                case StructureEntryDataType.UnsignedShort: return "ushort";
+                case StructureEntryDataType.SignedInt: return "int";
+                case StructureEntryDataType.UnsignedInt: return "uint";
+                case StructureEntryDataType.Float: return "float";
+                case StructureEntryDataType.Float_XYZ: return "Vector3";
+                case StructureEntryDataType.Float_XYZW: return "Vector4";
 
+                case StructureEntryDataType.Hash: return "uint"; //uint hashes...
+                case StructureEntryDataType.ByteEnum: return "byte"; //convert to enum later..
+                case StructureEntryDataType.IntEnum: return "int";
+                case StructureEntryDataType.ShortFlags: return "short";
+                case StructureEntryDataType.IntFlags1: return "int";
+                case StructureEntryDataType.IntFlags2: return "int";
+
+                case StructureEntryDataType.ArrayOfChars: return "ArrayOfChars64";
+
+                case StructureEntryDataType.Array:
+                case StructureEntryDataType.ArrayOfBytes:
+                case StructureEntryDataType.DataBlockPointer:
+                case StructureEntryDataType.CharPointer:
+                case StructureEntryDataType.StructurePointer:
+                case StructureEntryDataType.Structure:
+                default:
+                    return t.ToString();
+            }
+        }
+
+        public static long GetCSharpTypeSize(StructureEntryDataType t, long size)
+        {
+            switch (t)
+            {
+                case StructureEntryDataType.Boolean: return sizeof(bool);
+                case StructureEntryDataType.SignedByte: return sizeof(sbyte);
+                case StructureEntryDataType.UnsignedByte: return sizeof(byte);
+                case StructureEntryDataType.SignedShort: return sizeof(short);
+                case StructureEntryDataType.UnsignedShort: return sizeof(ushort);
+                case StructureEntryDataType.SignedInt: return sizeof(int);
+                case StructureEntryDataType.UnsignedInt: return sizeof(uint);
+                case StructureEntryDataType.Float: return sizeof(float);
+                case StructureEntryDataType.Float_XYZ: return sizeof(float) * 3;
+                case StructureEntryDataType.Float_XYZW: return sizeof(float) * 4;
+
+                case StructureEntryDataType.Hash: return sizeof(uint); //uint hashes...
+                case StructureEntryDataType.ByteEnum: return sizeof(byte); //convert to enum later..
+                case StructureEntryDataType.IntEnum: return sizeof(int);
+                case StructureEntryDataType.ShortFlags: return sizeof(short);
+                case StructureEntryDataType.IntFlags1: return sizeof(int);
+                case StructureEntryDataType.IntFlags2: return sizeof(int);
+
+                case StructureEntryDataType.ArrayOfChars: return 64;
+
+                case StructureEntryDataType.Array:
+                case StructureEntryDataType.ArrayOfBytes:
+                case StructureEntryDataType.DataBlockPointer:
+                case StructureEntryDataType.CharPointer:
+                case StructureEntryDataType.StructurePointer:
+                case StructureEntryDataType.Structure:
+                default:
+                    return size;
+            }
+        }
     }
 }

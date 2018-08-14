@@ -1,4 +1,26 @@
-﻿using System;
+﻿/*
+    Copyright(c) 2016 Neodymium
+
+    Permission is hereby granted, free of charge, to any person obtaining a copy
+    of this software and associated documentation files (the "Software"), to deal
+    in the Software without restriction, including without limitation the rights
+    to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+    copies of the Software, and to permit persons to whom the Software is
+    furnished to do so, subject to the following conditions:
+
+    The above copyright notice and this permission notice shall be included in
+    all copies or substantial portions of the Software.
+
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+    AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+    OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+    THE SOFTWARE.
+*/
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -110,7 +132,6 @@ namespace GenerateMetaEnumsAndStructs
 
                         sb.AppendLine("\t}\n");
 
-
                         enums.Add(ei.EnumKey, ei);
                     }
                 }
@@ -129,9 +150,16 @@ namespace GenerateMetaEnumsAndStructs
                     {
                         Console.Error.WriteLine("STRUCT " + GetSafeName(si.StructureNameHash, si.StructureKey));
 
-                        var structStr = GenerateStructureDefiniton(si);
-
                         structs.Add(si.StructureKey, si);
+
+                        if (!StructuresLengths.ContainsKey(si.StructureNameHash))
+                            StructuresLengths.Add(si.StructureNameHash, si.StructureLength);
+
+                        if (!StructureEnums.ContainsKey(si))
+                            StructureEnums.Add(si, new List<EnumInfo>());
+
+                        if (!StructureChildren.ContainsKey(si))
+                            StructureChildren.Add(si, new List<int>());
 
                         StructureInfos.Add(si);
                     }
@@ -160,7 +188,7 @@ namespace GenerateMetaEnumsAndStructs
 
         static void HashEmbeddedStrings()
         {
-            var metanames = Resource.metanames.Split('\n');
+            var metanames = Resource.metanames.Split(new string[] { "\r\n" }, StringSplitOptions.None);
 
             Hashes.Add(-489959468, "VECTOR3"); //0xe2cbcfd4, //this hash isn't correct, but is used in CDistantLODLight
             Hashes.Add(0x33, "VECTOR4");
@@ -228,7 +256,7 @@ namespace GenerateMetaEnumsAndStructs
             }
             else
             {
-                return "(MetaName) (" + n.ToString() + ")";
+                return "(MetaName) (" + Convert.ToString(n) + ")";
             }
         }
 
@@ -334,22 +362,14 @@ namespace GenerateMetaEnumsAndStructs
             var sbcb = new StringBuilder();
 
             sbc.AppendLine("using System.Collections.Generic;");
-            sbc.AppendLine("using System.Linq;\n");
-            sbc.AppendLine("using SharpDX;\n");
-            sbc.AppendLine("namespace RageLib.Resources.GTA5.PC.Meta.ExtendedTypes");
+            sbc.AppendLine("using System.Linq;");
+            sbc.AppendLine("using SharpDX;");
+            sbc.AppendLine("using RageLib.Resources.GTA5.PC.Meta;\n");
+            sbc.AppendLine("namespace RageLib.GTA5.ResourceWrappers.PC.Meta.Structures");
             sbc.AppendLine("{");
-            sbc.AppendFormat("\tpublic class {0} : MetaStructureWrapper<PC.Meta.{0}>\n", structureName);
+            sbc.AppendFormat("\tpublic class {0} : MetaStructureWrapper<RageLib.Resources.GTA5.PC.Meta.{0}>\n", structureName);
             sbc.AppendLine("\t{");
             sbc.AppendLine("\t\tpublic MetaFile Meta;");
-
-            if (!StructuresLengths.ContainsKey(def.StructureNameHash))
-                StructuresLengths.Add(def.StructureNameHash, def.StructureLength);
-
-            if (!StructureEnums.ContainsKey(def))
-                StructureEnums.Add(def, new List<EnumInfo>());
-
-            if (!StructureChildren.ContainsKey(def))
-                StructureChildren.Add(def, new List<int>());
 
             sb.AppendFormat("\t[StructLayout(LayoutKind.Sequential)] public struct {0} // {1} bytes, Key:{2}\n", structureName, def.StructureLength, structureKeyName);
             sb.AppendLine("\t{");
@@ -420,9 +440,8 @@ namespace GenerateMetaEnumsAndStructs
                     {
                         sbc.AppendFormat("\t\tpublic List<{0}> {1};\n", GetSafeName(structEntry.ReferenceKey, structEntry.ReferenceKey), entryNameUpper);
 
-                        sbcp.AppendFormat("\t\t\tvar {0} = MetaUtils.ConvertArray_Structure<PC.Meta.{1}>(meta, {2}.{0});\n", entryName, GetSafeName(structEntry.ReferenceKey, structEntry.ReferenceKey), structureName);
-                        sbcp.AppendFormat("\t\t\tif({0} != null)\n", entryName);
-                        sbcp.AppendFormat("\t\t\t\tthis.{0} = (List<{1}>) ({3}.ToList().Select(e => {{ var msw = new {1}({4}); msw.Parse(meta, e); return msw; }}));\n\n", entryNameUpper, GetSafeName(structEntry.ReferenceKey, structEntry.ReferenceKey), structureName, entryName, GetMetaNameString(structEntry.ReferenceKey));
+                        sbcp.AppendFormat("\t\t\tvar {0} = MetaUtils.ConvertDataArray<RageLib.Resources.GTA5.PC.Meta.{1}>(meta, {2}.{0});\n", entryName, GetSafeName(structEntry.ReferenceKey, structEntry.ReferenceKey), structureName);
+                        sbcp.AppendFormat("\t\t\tthis.{0} = {3}?.Select(e => {{ var msw = new {1}(); msw.Parse(meta, e); return msw; }}).ToList();\n\n", entryNameUpper, GetSafeName(structEntry.ReferenceKey, structEntry.ReferenceKey), structureName, entryName);
 
                         sbcb.AppendFormat("\t\t\tif(this.{0} != null)\n", entryNameUpper);
                         sbcb.AppendFormat("\t\t\t\tthis.MetaStructure.{0} = mb.AddItemArrayPtr({1}, this.{2}.Select(e => e.MetaStructure).ToArray());\n", entryName, GetMetaNameString(structEntry.ReferenceKey), entryNameUpper);
@@ -466,12 +485,12 @@ namespace GenerateMetaEnumsAndStructs
                                 sb.AppendFormat("\t\tpublic {0} {1}; // {2}  Key: {3}\n", GetSafeName(entry.ReferenceKey, entry.ReferenceTypeIndex), entryName, entry.DataOffset, GetString(entry.ReferenceKey));
                                 sbc.AppendFormat("\t\tpublic {0} {1};\n", GetSafeName(entry.ReferenceKey, entry.ReferenceKey), entryNameUpper);
 
-                                sbcp.AppendFormat("\t\t\tvar {0}Blocks = MetaUtils.FindBlocks(meta, PC.Meta.{1});\n", entryName, GetMetaNameString(entry.ReferenceKey));
+                                sbcp.AppendFormat("\t\t\tvar {0}Blocks = meta.FindBlocks(RageLib.Resources.GTA5.PC.Meta.{1});\n", entryName, GetMetaNameString(entry.ReferenceKey));
                                 sbcp.AppendLine();
                                 sbcp.AppendFormat("\t\t\tif({0}Blocks.Length > 0)\n", entryName);
                                 sbcp.AppendLine("\t\t\t{");
-                                sbcp.AppendFormat("\t\t\t\tvar {0} = MetaUtils.GetTypedData<PC.Meta.{1}>(meta, {2});\n", entryName, GetSafeName(entry.ReferenceKey, entry.ReferenceTypeIndex), GetMetaNameString(entry.ReferenceKey));
-                                sbcp.AppendFormat("\t\t\t\tthis.{0} = new {1}({2});\n", entryNameUpper, GetSafeName(entry.ReferenceKey, entry.ReferenceTypeIndex), GetMetaNameString(entry.ReferenceKey));
+                                sbcp.AppendFormat("\t\t\t\tvar {0} = MetaUtils.GetTypedData<RageLib.Resources.GTA5.PC.Meta.{1}>(meta, {2});\n", entryName, GetSafeName(entry.ReferenceKey, entry.ReferenceTypeIndex), GetMetaNameString(entry.ReferenceKey));
+                                sbcp.AppendFormat("\t\t\t\tthis.{0} = new {1}();\n", entryNameUpper, GetSafeName(entry.ReferenceKey, entry.ReferenceTypeIndex));
                                 sbcp.AppendFormat("\t\t\t\tthis.{0}.Parse(meta, {1});\n", entryNameUpper, entryName);
                                 sbcp.AppendLine("\t\t\t}");
                                 sbcp.AppendLine("\t\t\telse");
@@ -499,7 +518,7 @@ namespace GenerateMetaEnumsAndStructs
                             var CSharpType = GetCSharpTypeName(entry.DataType);
 
                             if (CSharpType == "ArrayOfBytes")
-                                CSharpType += entry.ReferenceKey.ToString();
+                                CSharpType += Convert.ToString(entry.ReferenceKey);
 
                             if (matchingEnum != null)
                                 CSharpType = GetSafeName(matchingEnum.EnumNameHash, matchingEnum.EnumKey);
@@ -561,13 +580,14 @@ namespace GenerateMetaEnumsAndStructs
 
             sb.AppendLine("\t}\n\n");
 
-            sbc.AppendFormat("\n\t\tpublic {0}(MetaName metaName) : base(metaName)\n", structureName);
+            sbc.AppendFormat("\n\t\tpublic {0}()\n", structureName);
             sbc.AppendLine("\t\t{");
-            sbc.AppendFormat("\t\t\tthis.MetaStructure = new PC.Meta.{0}();\n", structureName);
+            sbc.AppendFormat("\t\t\tthis.MetaName = {0};\n", GetMetaNameString(def.StructureNameHash));
+            sbc.AppendFormat("\t\t\tthis.MetaStructure = new RageLib.Resources.GTA5.PC.Meta.{0}();\n", structureName);
             sbc.AppendLine("\t\t}");
 
             sbc.AppendLine();
-            sbc.AppendFormat("\t\tpublic void Parse(MetaFile meta, PC.Meta.{0} {0})\n", structureName);
+            sbc.AppendFormat("\t\tpublic override void Parse(MetaFile meta, RageLib.Resources.GTA5.PC.Meta.{0} {0})\n", structureName);
             sbc.AppendLine("\t\t{");
             sbc.AppendLine("\t\t\tthis.Meta = meta;");
             sbc.AppendFormat("\t\t\tthis.MetaStructure = {0};\n", structureName);
@@ -575,7 +595,7 @@ namespace GenerateMetaEnumsAndStructs
             sbc.Append(sbcp);
             sbc.AppendLine("\t\t}\n");
 
-            sbc.AppendLine("\t\tpublic void Build(MetaBuilder mb, bool isRoot = false)");
+            sbc.AppendLine("\t\tpublic override void Build(MetaBuilder mb, bool isRoot = false)");
             sbc.AppendLine("\t\t{");
             sbc.Append(sbcb);
             sbc.AppendLine();
@@ -601,7 +621,7 @@ namespace GenerateMetaEnumsAndStructs
             sbc.AppendLine("\t}");
             sbc.AppendLine("}");
 
-            File.WriteAllText( @".\ExtendedTypes\" + structureName + ".cs", sbc.ToString());
+            File.WriteAllText( @".\MetaStructures\" + structureName + ".cs", sbc.ToString());
 
             return sb.ToString();
         }
@@ -665,6 +685,9 @@ namespace GenerateMetaEnumsAndStructs
 
             for (int i = 0; i < StructureInfos.Count; i++)
             {
+                if(!StructuresLengths.ContainsKey(StructureInfos[i].StructureNameHash))
+                    continue;
+
                 string code = GenerateStructureDefiniton(StructureInfos[i]);
                 string code2 = GenerateStructureInfos(StructureInfos[i]);
                 sbs.Append(code);

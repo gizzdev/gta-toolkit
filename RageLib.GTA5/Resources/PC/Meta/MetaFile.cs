@@ -1,5 +1,5 @@
 /*
-    Copyright(c) 2017 Neodymium
+    Copyright(c) 2016 Neodymium
 
     Permission is hereby granted, free of charge, to any person obtaining a copy
     of this software and associated documentation files (the "Software"), to deal
@@ -20,8 +20,10 @@
     THE SOFTWARE.
 */
 
+using RageLib.GTA5.ResourceWrappers.PC.Meta;
 using RageLib.Resources.Common;
 using System.Collections.Generic;
+using System.Xml;
 
 namespace RageLib.Resources.GTA5.PC.Meta
 {
@@ -165,6 +167,62 @@ namespace RageLib.Resources.GTA5.PC.Meta
             if (DataBlocks != null) list.Add(DataBlocks);
             if (Name != null) list.Add(Name);
             return list.ToArray();
+        }
+
+        public DataBlock[] FindBlocks(MetaName name)
+        {
+            var blocks = new List<DataBlock>();
+
+            for (int i = 0; i < this.DataBlocks.Count; i++)
+                if ((MetaName)this.DataBlocks[i].StructureNameHash == name)
+                    blocks.Add(this.DataBlocks[i]);
+
+            return blocks.ToArray();
+        }
+
+        public DataBlock GetRootBlock()
+        {
+            DataBlock block = null;
+            var rootind = this.RootBlockIndex - 1;
+            if ((rootind >= 0) && (rootind < this.DataBlocks.Count) && (this.DataBlocks.Data != null))
+            {
+                block = this.DataBlocks[rootind];
+            }
+            return block;
+        }
+
+        public DataBlock GetRootBlock(MetaName name)
+        {
+            DataBlock block = null;
+
+            int rootIndex = this.RootBlockIndex - 1;
+
+            if ((rootIndex >= 0) && (rootIndex < this.DataBlocks.Count) && (this.DataBlocks.Data != null))
+                block = this.DataBlocks[rootIndex];
+
+            return block;
+        }
+
+        public DataBlock GetBlock(int id)
+        {
+            DataBlock block = null;
+
+            var index = id - 1;
+
+            if ((index >= 0) && (index < this.DataBlocks.Count) && (this.DataBlocks.Data != null))
+                block = this.DataBlocks[index];
+
+            return block;
+        }
+
+        public static explicit operator XmlDocument(MetaFile meta)
+        {
+            var doc = new XmlDocument();
+            var xml = MetaXml.GetXml(meta);
+
+            doc.LoadXml(xml);
+
+            return doc;
         }
     }
 }

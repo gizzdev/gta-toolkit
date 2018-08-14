@@ -72,6 +72,13 @@
   <ItemGroup>
     <EmbeddedResource Include="PsoDefinitions.xml" />
   </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Lists\PsoCollisions.txt" />
+    <EmbeddedResource Include="Lists\PsoCommon.txt" />
+    <EmbeddedResource Include="Lists\PsoEnumValues.txt" />
+    <EmbeddedResource Include="Lists\PsoFieldNames.txt" />
+    <EmbeddedResource Include="Lists\PsoTypeNames.txt" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

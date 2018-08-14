@@ -61,12 +61,20 @@ namespace RageLib.GTA5.Utilities
             var archiveFileNames = Directory.GetFiles(gameDirectoryName, "*.rpf", SearchOption.AllDirectories);
             for (int i = 0; i < archiveFileNames.Length; i++)
             {
-                var fileName = archiveFileNames[i];
-                var fileInfo = new FileInfo(fileName);
-                var fileStream = new FileStream(fileName, FileMode.Open);
-                var inputArchive = RageArchiveWrapper7.Open(fileStream, fileInfo.Name);
-                ForEachFile(fileName.Replace(gameDirectoryName, ""), inputArchive.Root, inputArchive.archive_.Encryption, processDelegate);
-                inputArchive.Dispose();
+                try
+                {
+                    var fileName = archiveFileNames[i];
+                    var fileInfo = new FileInfo(fileName);
+                    var fileStream = new FileStream(fileName, FileMode.Open);
+
+                    var inputArchive = RageArchiveWrapper7.Open(fileStream, fileInfo.Name);
+                    ForEachFile(fileName.Replace(gameDirectoryName, ""), inputArchive.Root, inputArchive.archive_.Encryption, processDelegate);
+                    inputArchive.Dispose();
+                }
+                catch (Exception e)
+                {
+
+                }
             }
         }
 
@@ -77,9 +85,16 @@ namespace RageLib.GTA5.Utilities
                 processDelegate(fullPathName + "\\" + file.Name, file, encryption);
                 if ((file is IArchiveBinaryFile) && file.Name.EndsWith(".rpf", StringComparison.OrdinalIgnoreCase))
                 {
-                    var fileStream = ((IArchiveBinaryFile)file).GetStream();
-                    var inputArchive = RageArchiveWrapper7.Open(fileStream, file.Name);
-                    ForEachFile(fullPathName + "\\" + file.Name, inputArchive.Root, inputArchive.archive_.Encryption, processDelegate);
+                    try
+                    {
+                        var fileStream = ((IArchiveBinaryFile)file).GetStream();
+                        var inputArchive = RageArchiveWrapper7.Open(fileStream, file.Name);
+                        ForEachFile(fullPathName + "\\" + file.Name, inputArchive.Root, inputArchive.archive_.Encryption, processDelegate);
+
+                    } catch(Exception e)
+                    {
+
+                    }
                 }
             }
             foreach (var subDirectory in directory.GetDirectories())

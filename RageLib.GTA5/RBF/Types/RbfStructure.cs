@@ -29,5 +29,15 @@ namespace RageLib.GTA5.RBF
     {
         public string Name { get; set; }
         public List<IRbfType> Children = new List<IRbfType>();
+
+        public IRbfType FindChild(string name)
+        {
+            foreach (var child in Children)
+            {
+                if (child == null) continue;
+                if (child.Name == name) return child;
+            }
+            return null;
+        }
     }
 }

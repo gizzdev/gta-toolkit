@@ -1,5 +1,5 @@
 /*
-    Copyright(c) 2017 Neodymium
+    Copyright(c) 2016 Neodymium
 
     Permission is hereby granted, free of charge, to any person obtaining a copy
     of this software and associated documentation files (the "Software"), to deal
@@ -21,6 +21,7 @@
 */
 
 using RageLib.Resources.Common;
+using System;
 using System.Collections.Generic;
 
 namespace RageLib.Resources.GTA5.PC.Drawables
@@ -103,18 +104,40 @@ namespace RageLib.Resources.GTA5.PC.Drawables
             this.Skeleton = reader.ReadBlockAt<SkeletonData>(
                 this.SkeletonPointer // offset
             );
-            this.DrawableModelsHigh = reader.ReadBlockAt<ResourcePointerList64<DrawableModel>>(
-                this.DrawableModelsHighPointer // offset
-            );
-            this.DrawableModelsMedium = reader.ReadBlockAt<ResourcePointerList64<DrawableModel>>(
-                this.DrawableModelsMediumPointer // offset
-            );
-            this.DrawableModelsLow = reader.ReadBlockAt<ResourcePointerList64<DrawableModel>>(
-                this.DrawableModelsLowPointer // offset
-            );
-            this.DrawableModelsVeryLow = reader.ReadBlockAt<ResourcePointerList64<DrawableModel>>(
-                this.DrawableModelsVeryLowPointer // offset
-            );
+
+            try
+            {
+                this.DrawableModelsMedium = reader.ReadBlockAt<ResourcePointerList64<DrawableModel>>(
+                    this.DrawableModelsMediumPointer // offset
+                );
+            }
+            catch(Exception e)
+            {
+
+            }
+
+            try
+            {
+                this.DrawableModelsLow = reader.ReadBlockAt<ResourcePointerList64<DrawableModel>>(
+                    this.DrawableModelsLowPointer // offset
+                );
+            }
+            catch(Exception e)
+            {
+
+            }
+
+            try
+            {
+                this.DrawableModelsVeryLow = reader.ReadBlockAt<ResourcePointerList64<DrawableModel>>(
+                    this.DrawableModelsVeryLowPointer // offset
+                );
+            }
+            catch (Exception e)
+            {
+
+            }
+
             this.Joints = reader.ReadBlockAt<Joints>(
                 this.JointsPointer // offset
             );

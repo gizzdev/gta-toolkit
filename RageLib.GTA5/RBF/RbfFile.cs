@@ -33,9 +33,9 @@ namespace RageLib.GTA5.RBF
     {
         private const int RBF_IDENT = 0x30464252;
 
-        private RbfStructure current;
-        private Stack<RbfStructure> stack;
-        private List<RbfEntryDescription> descriptors;
+        public RbfStructure current;
+        public Stack<RbfStructure> stack;
+        public List<RbfEntryDescription> descriptors;
 
         public RbfStructure Load(string fileName)
         {

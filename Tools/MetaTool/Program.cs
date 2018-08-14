@@ -21,19 +21,17 @@
 */
 
 using RageLib.GTA5.PSO;
-using RageLib.GTA5.PSOWrappers;
-using RageLib.GTA5.PSOWrappers.Xml;
 using RageLib.GTA5.RBF;
-using RageLib.GTA5.RBFWrappers;
-using RageLib.GTA5.ResourceWrappers.PC.Meta;
-using RageLib.GTA5.ResourceWrappers.PC.Meta.Descriptions;
-using RageLib.Hash;
 using RageLib.Resources.GTA5;
+using RageLib.GTA5.ResourceWrappers.PC.Meta;
+using RageLib.GTA5.ResourceWrappers.PC.PSO;
+using RageLib.GTA5.ResourceWrappers.PC.RBF;
+using RageLib.Resources.GTA5.PC.Meta;
 using System;
-using System.Collections.Generic;
 using System.IO;
+using System.Xml;
 using System.Reflection;
-using System.Xml.Serialization;
+using RageLib.Hash;
 
 namespace MetaTool
 {
@@ -66,61 +64,51 @@ namespace MetaTool
             }
         }
 
-        private void Convert()
+        public void Convert()
         {
-            if (arguments[0].EndsWith(".ymap.xml") ||
-             arguments[0].EndsWith(".ytyp.xml") ||
-             arguments[0].EndsWith(".ymt.xml"))
+            if (this.arguments[0].EndsWith(".ymap.xml") || this.arguments[0].EndsWith(".ytyp.xml") || this.arguments[0].EndsWith(".ymt.xml"))
             {
-                ConvertXmlToResource();
+                this.ConvertToMetaResource();
+                return;
             }
-            else if (arguments[0].EndsWith(".ymap") ||
-                   arguments[0].EndsWith(".ytyp") ||
-                   arguments[0].EndsWith(".ymt"))
+            if (this.arguments[0].EndsWith(".pso.xml"))
             {
-                if (ResourceFile_GTA5_pc.IsResourceFile(arguments[0]))
-                {
-                    ConvertResourceToXml();
-                }
-                else if (PsoFile.IsPSO(arguments[0]))
-                {
-                    ConvertPsoToXml();
-                }
-                else
-                {
-                    ConvertRbfToXml();
-                }
+                this.ConvertToMetaPso();
+                return;
             }
-            else if (arguments[0].EndsWith(".ymf"))
+            if (this.arguments[0].EndsWith(".ymap") || this.arguments[0].EndsWith(".ytyp") || this.arguments[0].EndsWith(".ymt"))
             {
-                ConvertPsoToXml();
+                this.ConvertResourceToXml();
+                return;
             }
-            else
+            if (this.arguments[0].EndsWith(".ymf"))
             {
-                Console.WriteLine("No supported file name specified.");
-                Console.ReadLine();
+                this.ConvertPsoToXml();
+                return;
             }
+            Console.WriteLine("Unsupported file extension.");
+            Console.ReadLine();
         }
 
-        private void ConvertXmlToResource()
+        public void ConvertToMetaPso()
+        {
+            throw new NotImplementedException();
+        }
+
+        private void ConvertToMetaResource()
         {
             string inputFileName = arguments[0];
             string outputFileName = inputFileName.Replace(".xml", "");
 
-            var xml = (MetaInformationXml)null;
-            var assembly = Assembly.GetExecutingAssembly();
-            using (Stream xmlStream = assembly.GetManifestResourceStream("MetaTool.XmlInfos.xml"))
-            {
-                var ser = new XmlSerializer(typeof(MetaInformationXml));
-                xml = (MetaInformationXml)ser.Deserialize(xmlStream);
-            }
+            var xmlDoc = new XmlDocument();
+            xmlDoc.Load(inputFileName);
 
-            var importer = new MetaXmlImporter(xml);
+            var res = new ResourceFile_GTA5_pc<MetaFile>();
 
-            var imported = importer.Import(inputFileName);
+            res.Version = 2;
+            res.ResourceData = XmlMeta.GetMeta(xmlDoc);
 
-            var writer = new MetaWriter();
-            writer.Write(imported, outputFileName);
+            res.Save(outputFileName);
         }
         
         private void ConvertResourceToXml()
@@ -128,13 +116,15 @@ namespace MetaTool
             string inputFileName = arguments[0];
             string outputFileName = inputFileName + ".xml";
 
-            var reader = new MetaReader();
-            var meta = reader.Read(inputFileName);
-            var exporter = new MetaXmlExporter();
-            exporter.HashMapping = new Dictionary<int, string>();
-            AddHashForStrings(exporter, "MetaTool.Lists.FileNames.txt");
-            AddHashForStrings(exporter, "MetaTool.Lists.MetaNames.txt");
-            exporter.Export(meta, outputFileName);
+            var res = new ResourceFile_GTA5_pc<MetaFile>();
+            res.Load(inputFileName);
+
+            AddHashForStrings("MetaTool.Lists.FileNames.txt");
+            AddHashForStrings("MetaTool.Lists.MetaNames.txt");
+
+            var xml = MetaXml.GetXml(res.ResourceData);
+
+            File.WriteAllText(outputFileName, xml);
         }
 
         private void ConvertPsoToXml()
@@ -142,17 +132,19 @@ namespace MetaTool
             string inputFileName = arguments[0];
             string outputFileName = inputFileName + ".pso.xml";
 
-            var reader = new PsoReader();
-            var meta = reader.Read(inputFileName);
-            var exporter = new PsoXmlExporter();
-            exporter.HashMapping = new Dictionary<int, string>();
-            AddHashForStrings(exporter, "MetaTool.Lists.PsoTypeNames.txt");
-            AddHashForStrings(exporter, "MetaTool.Lists.PsoFieldNames.txt");
-            AddHashForStrings(exporter, "MetaTool.Lists.PsoEnumValues.txt");
-            AddHashForStrings(exporter, "MetaTool.Lists.PsoCommon.txt");
-            AddHashForStrings(exporter, "MetaTool.Lists.FileNames.txt");
-            AddHashForStrings(exporter, "MetaTool.Lists.PsoCollisions.txt");
-            exporter.Export(meta, outputFileName);
+            var pso = new PsoFile();
+            pso.Load(inputFileName);
+
+            AddHashForStrings("MetaTool.Lists.PsoTypeNames.txt");
+            AddHashForStrings("MetaTool.Lists.PsoFieldNames.txt");
+            AddHashForStrings("MetaTool.Lists.PsoEnumValues.txt");
+            AddHashForStrings("MetaTool.Lists.PsoCommon.txt");
+            AddHashForStrings("MetaTool.Lists.FileNames.txt");
+            AddHashForStrings("MetaTool.Lists.PsoCollisions.txt");
+
+            var xml = PsoXml.GetXml(pso);
+
+            File.WriteAllText(outputFileName, xml);
         }
 
         private void ConvertRbfToXml()
@@ -160,41 +152,26 @@ namespace MetaTool
             string inputFileName = arguments[0];
             string outputFileName = inputFileName + ".rbf.xml";
 
-            var rbf = new RbfFile().Load(inputFileName);
-            new RbfXmlExporter().Export(rbf, outputFileName);
+            var rbf = new RbfFile();
+
+            rbf.Load(inputFileName);
+
+            var xml = RbfXml.GetXml(rbf);
+
+            File.WriteAllText(outputFileName, xml);
         }
 
-        private void AddHashForStrings(MetaXmlExporter exporter, string resourceFileName)
+        private void AddHashForStrings(string resourceFileName)
         {
             var assembly = Assembly.GetExecutingAssembly();
             using (Stream namesStream = assembly.GetManifestResourceStream(resourceFileName))
-            using (StreamReader namesReader = new StreamReader(namesStream))
             {
-                while (!namesReader.EndOfStream)
+                using (StreamReader namesReader = new StreamReader(namesStream))
                 {
-                    string name = namesReader.ReadLine();
-                    uint hash = Jenkins.Hash(name);
-                    if (!exporter.HashMapping.ContainsKey((int)hash))
+                    while (!namesReader.EndOfStream)
                     {
-                        exporter.HashMapping.Add((int)hash, name);
-                    }
-                }
-            }
-        }
-
-        private void AddHashForStrings(PsoXmlExporter exporter, string resourceFileName)
-        {
-            var assembly = Assembly.GetExecutingAssembly();
-            using (Stream namesStream = assembly.GetManifestResourceStream(resourceFileName))
-            using (StreamReader namesReader = new StreamReader(namesStream))
-            {
-                while (!namesReader.EndOfStream)
-                {
-                    string name = namesReader.ReadLine();
-                    uint hash = Jenkins.Hash(name);
-                    if (!exporter.HashMapping.ContainsKey((int)hash))
-                    {
-                        exporter.HashMapping.Add((int)hash, name);
+                        string name = namesReader.ReadLine();
+                        Jenkins.Ensure(name);
                     }
                 }
             }

@@ -160,7 +160,7 @@ namespace RageLib.GTA5.PSOWrappers
                                 }
                         }
                     }
-                case DataType.Integer:
+                case DataType.UInt:
                     {
                         switch (entryInfo.Unk_5h)
                         {
@@ -206,7 +206,7 @@ namespace RageLib.GTA5.PSOWrappers
                         }
 
                     }
-                case DataType.INT_05h:
+                case DataType.SInt:
                     {
                         switch (entryInfo.Unk_5h)
                         {
@@ -214,7 +214,7 @@ namespace RageLib.GTA5.PSOWrappers
                             default: throw new Exception("Unsupported PsoType5 type.");
                         }
                     }
-                case DataType.Byte:
+                case DataType.UByte:
                     {
                         switch (entryInfo.Unk_5h)
                         {
@@ -222,7 +222,7 @@ namespace RageLib.GTA5.PSOWrappers
                             default: throw new Exception("Unsupported PsoByte type.");
                         }
                     }
-                case DataType.Boolean:
+                case DataType.Bool:
                     {
                         switch (entryInfo.Unk_5h)
                         {
@@ -262,7 +262,7 @@ namespace RageLib.GTA5.PSOWrappers
                             default: throw new Exception("Unsupported float4 type.");
                         }
                     }
-                case DataType.TYPE_09h:
+                case DataType.Float4a:
                     {
                         switch (entryInfo.Unk_5h)
                         {
@@ -270,7 +270,7 @@ namespace RageLib.GTA5.PSOWrappers
                             default: throw new Exception("Unsupported PsoType9 type.");
                         }
                     }
-                case DataType.LONG_20h:
+                case DataType.Long:
                     {
                         switch (entryInfo.Unk_5h)
                         {
@@ -278,7 +278,7 @@ namespace RageLib.GTA5.PSOWrappers
                             default: throw new Exception("Unsupported PsoType32 type.");
                         }
                     }
-                case DataType.SHORT_1Eh:
+                case DataType.HFloat:
                     {
                         switch (entryInfo.Unk_5h)
                         {
@@ -286,7 +286,7 @@ namespace RageLib.GTA5.PSOWrappers
                             default: throw new Exception("Unsupported PsoType30 type.");
                         }
                     }
-                case DataType.SHORT_03h:
+                case DataType.SShort:
                     {
                         switch (entryInfo.Unk_5h)
                         {
@@ -294,7 +294,7 @@ namespace RageLib.GTA5.PSOWrappers
                             default: throw new Exception("Unsupported PsoType3 type.");
                         }
                     }
-                case DataType.SHORT_04h:
+                case DataType.UShort:
                     {
                         switch (entryInfo.Unk_5h)
                         {
@@ -302,7 +302,7 @@ namespace RageLib.GTA5.PSOWrappers
                             default: throw new Exception("Unsupported PsoType4 type.");
                         }
                     }
-                case DataType.LONG_01h:
+                case DataType.SByte:
                     {
                         switch (entryInfo.Unk_5h)
                         {
@@ -310,7 +310,7 @@ namespace RageLib.GTA5.PSOWrappers
                             default: throw new Exception("Unsupported PsoType1 type.");
                         }
                     }
-                case DataType.TYPE_14h:
+                case DataType.Float3a:
                     {
                         switch (entryInfo.Unk_5h)
                         {

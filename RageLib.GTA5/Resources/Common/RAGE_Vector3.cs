@@ -20,6 +20,8 @@
     THE SOFTWARE.
 */
 
+using SharpDX;
+
 namespace RageLib.Resources
 {
     public class RAGE_Vector3 : ResourceSystemBlock
@@ -66,6 +68,21 @@ namespace RageLib.Resources
             writer.Write(this.x1);
             writer.Write(this.x2);
             writer.Write(this.x3);
+        }
+
+        public static explicit operator Vector3(RAGE_Vector3 v)
+        {
+            return new Vector3(v.x1, v.x2, v.x3);
+        }
+
+        public static explicit operator RAGE_Vector3(Vector3 v)
+        {
+            return new RAGE_Vector3()
+            {
+                x1 = v.X,
+                x2 = v.Y,
+                x3 = v.Z,
+            };
         }
     }
 }

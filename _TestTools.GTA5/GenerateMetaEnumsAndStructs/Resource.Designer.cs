@@ -93,9 +93,7 @@ namespace GenerateMetaEnumsAndStructs {
         ///activeShadowCascades
         ///adapDOFProj
         ///AdapLumSampler
-        ///AdaptedLumMax
-        ///AdaptedLumMin
-        ///AdaptionParam [le reste de la chaîne a été tronqué]&quot;;.
+        ///AdaptedLu [le reste de la chaîne a été tronqué]&quot;;.
         /// </summary>
         internal static string metanames {
             get {

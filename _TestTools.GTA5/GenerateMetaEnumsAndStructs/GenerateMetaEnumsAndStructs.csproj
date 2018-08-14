@@ -54,11 +54,10 @@
   <ItemGroup>
     <Reference Include="RageLib, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\RageLib.GTA5\bin\Release\RageLib.dll</HintPath>
+      <HintPath>..\..\RageLib\bin\Debug\RageLib.dll</HintPath>
     </Reference>
-    <Reference Include="RageLib.GTA5, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\RageLib.GTA5\bin\Release\RageLib.GTA5.dll</HintPath>
+    <Reference Include="RageLib.GTA5">
+      <HintPath>..\..\RageLib.GTA5\bin\Debug\RageLib.GTA5.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />

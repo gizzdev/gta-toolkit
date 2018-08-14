@@ -2840,8 +2840,8 @@ sampFiltered
 sampleAngle
 sampleScale
 SAT_NONE
-Scale
 scale
+Scale
 Scale_
 scale_
 scaleFactor
@@ -3355,6 +3355,7 @@ VisibleInstanceBuffer3
 visibleMods
 vJunctionMax
 vJunctionNodePositions
+vlink87812
 vLocation
 VMCP_DEFAULT
 VMT_ARMOUR

@@ -1,5 +1,5 @@
 ﻿/*
-    Copyright(c) 2015 Neodymium
+    Copyright(c) 2016 Neodymium
 
     Permission is hereby granted, free of charge, to any person obtaining a copy
     of this software and associated documentation files (the "Software"), to deal
@@ -20,10 +20,15 @@
     THE SOFTWARE.
 */
 
+using System.Collections.Generic;
+using System.Linq;
+
 namespace RageLib.Hash
 {
     public class Jenkins
     {
+        public static Dictionary<uint, string> Index = new Dictionary<uint, string>();
+
         // source: http://en.wikipedia.org/wiki/Jenkins_hash_function
         public static uint Hash(string key)
         {
@@ -38,6 +43,48 @@ namespace RageLib.Hash
             hash ^= (hash >> 11);
             hash += (hash << 15);
             return hash;
+        }
+
+        public static void Clear()
+        {
+            Index.Clear();
+        }
+
+        public static bool Ensure(string str)
+        {
+            uint hash = Hash(str);
+            if (hash == 0) return true;
+
+            if (!Index.ContainsKey(hash))
+            {
+                Index.Add(hash, str);
+                return false;
+            }
+
+            return true;
+        }
+
+        public static string GetString(uint hash)
+        {
+            string res;
+
+            if (!Index.TryGetValue(hash, out res))
+            {
+                res = hash.ToString();
+            }
+
+            return res;
+        }
+        public static string TryGetString(uint hash)
+        {
+            string res;
+
+            if (!Index.TryGetValue(hash, out res))
+            {
+                res = string.Empty;
+            }
+
+            return res;
         }
 
     }

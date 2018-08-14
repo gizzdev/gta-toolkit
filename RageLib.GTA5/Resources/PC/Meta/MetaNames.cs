@@ -1,3 +1,25 @@
+/*
+    Copyright(c) 2016 Neodymium
+
+    Permission is hereby granted, free of charge, to any person obtaining a copy
+    of this software and associated documentation files (the "Software"), to deal
+    in the Software without restriction, including without limitation the rights
+    to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+    copies of the Software, and to permit persons to whom the Software is
+    furnished to do so, subject to the following conditions:
+
+    The above copyright notice and this permission notice shall be included in
+    all copies or substantial portions of the Software.
+
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+    AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+    OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+    THE SOFTWARE.
+*/
+
 namespace RageLib.Resources.GTA5.PC.Meta
 {
     public enum MetaName : int
@@ -91,6 +113,7 @@ namespace RageLib.Resources.GTA5.PC.Meta
         aircraftSectionDamageSmokePtFxRange = -1994987466,
         aircraftSectionDamageSmokePtFxSpeedEvoMax = 1864737051,
         aircraftSectionDamageSmokePtFxSpeedEvoMin = -579697209,
+        attachedObjects = -1912262356,
         AirResist = 1578850177,
         ALL = -604447406,
         Allow = 1329228842,
@@ -2851,8 +2874,8 @@ namespace RageLib.Resources.GTA5.PC.Meta
         sampleAngle = 228202063,
         sampleScale = 1973995063,
         SAT_NONE = 836773056,
-        Scale = 1018839014,
         scale = 1342385372,
+        Scale = 1018839014,
         Scale_ = 116180525,
         scale_ = -1015717473,
         scaleFactor = -333139948,
