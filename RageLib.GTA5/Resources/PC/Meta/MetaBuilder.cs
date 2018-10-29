@@ -111,6 +111,7 @@ namespace RageLib.Resources.GTA5.PC.Meta
 
         public MetaBuilderPointer AddString(string str)
         {
+            str = str ?? "";
             MetaBuilderBlock block = EnsureBlock(MetaName.STRING);
             byte[] data = Encoding.ASCII.GetBytes(str);
             int datalen = data.Length;
@@ -184,7 +185,8 @@ namespace RageLib.Resources.GTA5.PC.Meta
         public Array_uint AddHashArrayPtr(MetaName[] items)
         {
             if ((items == null) || (items.Length == 0)) return new Array_uint();
-            var ptr = AddItemArray(MetaName.HASH, items);
+            uint[] itemHashes = Array.ConvertAll(items, e => (uint)e);
+            var ptr = AddItemArray(MetaName.HASH, itemHashes);
             return new Array_uint(ptr);
         }
         public Array_uint AddUintArrayPtr(uint[] items)
@@ -425,7 +427,8 @@ namespace RageLib.Resources.GTA5.PC.Meta
 
         public DataBlock GetMetaDataBlock()
         {
-            if (TotalSize <= 0) return null;
+            if (TotalSize <= 0)
+                return null;
 
             byte[] data = new byte[TotalSize];
             int offset = 0;
@@ -437,7 +440,8 @@ namespace RageLib.Resources.GTA5.PC.Meta
             }
 
             DataBlock db = new DataBlock();
-            db.StructureNameHash = (int) StructureNameHash;
+
+            db.StructureNameHash = (MetaName) StructureNameHash;
             db.DataLength = TotalSize;
             db.Data = new ResourceSimpleArray<byte_r>();
 
