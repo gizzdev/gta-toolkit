@@ -206,7 +206,8 @@ namespace RageLib.GTA5.ResourceWrappers.PC.Meta
                             {
                                 var _infos = MetaInfo.GetEnumInfo((MetaName) entry.ReferenceKey);
 
-                                mb.AddEnumInfo((MetaName)_infos.EnumNameHash);
+                                if(_infos != null)
+                                    mb.AddEnumInfo((MetaName)_infos.EnumNameHash);
 
                                 int val = GetEnumInt((MetaName)entry.ReferenceKey, cnode.InnerText, entry.DataType);
                                 Write(val, data, entry.DataOffset);
@@ -217,10 +218,16 @@ namespace RageLib.GTA5.ResourceWrappers.PC.Meta
                             {
                                 var _infos = MetaInfo.GetEnumInfo((MetaName)entry.ReferenceKey);
 
-                                mb.AddEnumInfo((MetaName)_infos.EnumNameHash);
+                                if (_infos != null)
+                                    mb.AddEnumInfo((MetaName)_infos.EnumNameHash);
 
-                                int val = GetEnumInt((MetaName)entry.ReferenceKey, cnode.InnerText, entry.DataType);
-                                Write((short)val, data, entry.DataOffset);
+                                // int val = GetEnumInt((MetaName)entry.ReferenceKey, cnode.InnerText, entry.DataType);
+
+                                if (short.TryParse(cnode.InnerText, out short val))
+                                {
+                                    Write(val, data, entry.DataOffset);
+                                }
+
                                 break;
                             }
 
@@ -337,7 +344,7 @@ namespace RageLib.GTA5.ResourceWrappers.PC.Meta
                     {
                         byte val = Convert.ToByte(split[j], 16);
                         data[offset] = val;
-                        offset += sizeof(byte);
+                        offset++;
                     }
                     break;
                 case StructureEntryDataType.SignedByte: //expecting space-separated array.
@@ -347,7 +354,7 @@ namespace RageLib.GTA5.ResourceWrappers.PC.Meta
                         if (sbyte.TryParse(split[j].Trim(), ns, ic, out val))
                         {
                             data[offset] = (byte)val;
-                            offset += sizeof(sbyte);
+                            offset++;
                         }
                     }
                     break;
@@ -358,7 +365,7 @@ namespace RageLib.GTA5.ResourceWrappers.PC.Meta
                         if (byte.TryParse(split[j].Trim(), ns, ic, out val))
                         {
                             data[offset] = val;
-                            offset += sizeof(byte);
+                            offset++;
                         }
                     }
                     break;
@@ -368,8 +375,9 @@ namespace RageLib.GTA5.ResourceWrappers.PC.Meta
                         short val;// = Convert.ToInt16(split[j], 10);
                         if (short.TryParse(split[j].Trim(), ns, ic, out val))
                         {
-                            Write(val, data, offset);
-                            offset += sizeof(short);
+                            byte[] bytes = BitConverter.GetBytes(val);
+                            Write(bytes[bytes.Length - 1], data, offset);
+                            offset++;
                         }
                     }
                     break;
@@ -379,8 +387,9 @@ namespace RageLib.GTA5.ResourceWrappers.PC.Meta
                         ushort val;// = Convert.ToUInt16(split[j], 10);
                         if (ushort.TryParse(split[j].Trim(), ns, ic, out val))
                         {
-                            Write(val, data, offset);
-                            offset += sizeof(ushort);
+                            byte[] bytes = BitConverter.GetBytes(val);
+                            Write(bytes[bytes.Length - 1], data, offset);
+                            offset++;
                         }
                     }
                     break;
@@ -390,8 +399,9 @@ namespace RageLib.GTA5.ResourceWrappers.PC.Meta
                         int val;// = Convert.ToInt32(split[j], 10);
                         if (int.TryParse(split[j].Trim(), ns, ic, out val))
                         {
-                            Write(val, data, offset);
-                            offset += sizeof(int);
+                            byte[] bytes = BitConverter.GetBytes(val);
+                            Write(bytes[bytes.Length - 1], data, offset);
+                            offset++;
                         }
                     }
                     break;
@@ -401,8 +411,9 @@ namespace RageLib.GTA5.ResourceWrappers.PC.Meta
                         uint val;// = Convert.ToUInt32(split[j], 10);
                         if (uint.TryParse(split[j].Trim(), ns, ic, out val))
                         {
-                            Write(val, data, offset);
-                            offset += sizeof(uint);
+                            byte[] bytes = BitConverter.GetBytes(val);
+                            Write(bytes[bytes.Length - 1], data, offset);
+                            offset++;
                         }
                     }
                     break;
@@ -410,10 +421,11 @@ namespace RageLib.GTA5.ResourceWrappers.PC.Meta
                     for (int j = 0; j < split.Length; j++)
                     {
                         float val;// = FloatUtil.Parse(split[j]);
-                        if (float.TryParse(split[j].Trim(), out val))
+                        if (float.TryParse(split[j].Trim(), NumberStyles.AllowLeadingSign | NumberStyles.AllowDecimalPoint | NumberStyles.AllowExponent, CultureInfo.InvariantCulture, out val))
                         {
-                            Write(val, data, offset);
-                            offset += sizeof(float);
+                            byte[] bytes = BitConverter.GetBytes(val);
+                            Write(bytes[bytes.Length - 1], data, offset);
+                            offset++;
                         }
                     }
                     break;
@@ -754,7 +766,7 @@ namespace RageLib.GTA5.ResourceWrappers.PC.Meta
                 {
                     var enumName = GetHash(split[i].Trim());
 
-                    for (int j = 0; j < infos.Entries.Length; j++)
+                    for (int j = 0; j < infos.Entries.Count; j++)
                     {
                         var entry = infos.Entries[j];
                         if ((MetaName)entry.EntryNameHash == enumName)
@@ -773,7 +785,7 @@ namespace RageLib.GTA5.ResourceWrappers.PC.Meta
 
                 var enumName = (MetaName)GetHash(enumString);
 
-                for (int j = 0; j < infos.Entries.Length; j++)
+                for (int j = 0; j < infos.Entries.Count; j++)
                 {
                     var entry = infos.Entries[j];
 

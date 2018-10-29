@@ -185,7 +185,7 @@ namespace RageLib.GTA5.ResourceWrappers.PC.Meta
                         break;
                     case StructureEntryDataType.ShortFlags:
                         var shortFlagsVal = BitConverter.ToInt16(data, eoffset);
-                        var shortFlagsStr = GetEnumString(cont, entry, shortFlagsVal);
+                        var shortFlagsStr = shortFlagsVal.ToString(); // GetEnumString(cont, entry, shortFlagsVal);
                         StringTag(sb, cind, ename, shortFlagsStr);
                         break;
                     case StructureEntryDataType.SignedByte:
@@ -359,26 +359,29 @@ namespace RageLib.GTA5.ResourceWrappers.PC.Meta
                 default:
                     for (int n = 0; n < byteArrLen; n++)
                     {
+                        int s = sizeof(float);
                         var bidx = eoffset + n;
-                        byte b = ((bidx >= 0) && (bidx < data.Length)) ? data[bidx] : (byte)0;
+                        byte b = (byte)data[bidx];
                         sb.Append(b.ToString("X").PadLeft(2, '0'));
+                        if (n < byteArrLen - 1) sb.Append(" ");
                     }
                     break;
                 case StructureEntryDataType.SignedByte:
                     for (int n = 0; n < byteArrLen; n++)
                     {
+                        int s = sizeof(float);
                         var bidx = eoffset + n;
-                        sbyte b = ((bidx >= 0) && (bidx < data.Length)) ? (sbyte)data[bidx] : (sbyte)0;
-                        sb.Append(b.ToString()); //sb.Append(b.ToString("X").PadLeft(2, '0')); to show HEX values
+                        sbyte b = (sbyte)data[bidx];
+                        sb.Append(b.ToString());
                         if (n < byteArrLen - 1) sb.Append(" ");
                     }
                     break;
-
                 case StructureEntryDataType.UnsignedByte:
                     for (int n = 0; n < byteArrLen; n++)
                     {
+                        int s = sizeof(float);
                         var bidx = eoffset + n;
-                        byte b = ((bidx >= 0) && (bidx < data.Length)) ? data[bidx] : (byte)0;
+                        byte b = (byte)data[bidx];
                         sb.Append(b.ToString());
                         if (n < byteArrLen - 1) sb.Append(" ");
                     }
@@ -386,8 +389,11 @@ namespace RageLib.GTA5.ResourceWrappers.PC.Meta
                 case StructureEntryDataType.SignedShort:
                     for (int n = 0; n < byteArrLen; n++)
                     {
-                        var bidx = eoffset + n * 2;
-                        short b = ((bidx >= 0) && (bidx < data.Length)) ? BitConverter.ToInt16(data, bidx) : (short)0;
+                        int s = sizeof(float);
+                        var bidx = eoffset + n;
+                        var buffer = new byte[s];
+                        buffer[buffer.Length - 1] = data[bidx];
+                        short b = BitConverter.ToInt16(buffer, 0);
                         sb.Append(b.ToString());
                         if (n < byteArrLen - 1) sb.Append(" ");
                     }
@@ -395,8 +401,11 @@ namespace RageLib.GTA5.ResourceWrappers.PC.Meta
                 case StructureEntryDataType.UnsignedShort:
                     for (int n = 0; n < byteArrLen; n++)
                     {
-                        var bidx = eoffset + n * 2;
-                        ushort b = ((bidx >= 0) && (bidx < data.Length)) ? BitConverter.ToUInt16(data, bidx) : (ushort)0;
+                        int s = sizeof(float);
+                        var bidx = eoffset + n;
+                        var buffer = new byte[s];
+                        buffer[buffer.Length - 1] = data[bidx];
+                        ushort b = BitConverter.ToUInt16(buffer, 0);
                         sb.Append(b.ToString());
                         if (n < byteArrLen - 1) sb.Append(" ");
                     }
@@ -404,8 +413,11 @@ namespace RageLib.GTA5.ResourceWrappers.PC.Meta
                 case StructureEntryDataType.SignedInt:
                     for (int n = 0; n < byteArrLen; n++)
                     {
-                        var bidx = eoffset + n * 4;
-                        int b = ((bidx >= 0) && (bidx < data.Length)) ? BitConverter.ToInt32(data, bidx) : (int)0;
+                        int s = sizeof(float);
+                        var bidx = eoffset + n;
+                        var buffer = new byte[s];
+                        buffer[buffer.Length - 1] = data[bidx];
+                        int b = BitConverter.ToInt32(buffer, 0);
                         sb.Append(b.ToString());
                         if (n < byteArrLen - 1) sb.Append(" ");
                     }
@@ -413,17 +425,23 @@ namespace RageLib.GTA5.ResourceWrappers.PC.Meta
                 case StructureEntryDataType.UnsignedInt:
                     for (int n = 0; n < byteArrLen; n++)
                     {
-                        var bidx = eoffset + n * 4;
-                        uint b = ((bidx >= 0) && (bidx < data.Length)) ? BitConverter.ToUInt32(data, bidx) : (uint)0;
+                        int s = sizeof(float);
+                        var bidx = eoffset + n;
+                        var buffer = new byte[s];
+                        buffer[buffer.Length - 1] = data[bidx];
+                        uint b = BitConverter.ToUInt32(buffer, 0);
                         sb.Append(b.ToString());
                         if (n < byteArrLen - 1) sb.Append(" ");
                     }
                     break;
                 case StructureEntryDataType.Float:
-                    for (int n = 0; n < byteArrLen; n++)
+                    for(int n=0; n<byteArrLen; n++)
                     {
-                        var bidx = eoffset + n * 4;
-                        float b = ((bidx >= 0) && (bidx < data.Length)) ? BitConverter.ToSingle(data, bidx) : (float)0;
+                        int s = sizeof(float);
+                        var bidx = eoffset + n;
+                        var buffer = new byte[s];
+                        buffer[buffer.Length - 1] = data[bidx];
+                        float b = BitConverter.ToSingle(buffer, 0);
                         sb.Append(FloatUtil.ToString(b));
                         if (n < byteArrLen - 1) sb.Append(" ");
                     }
