@@ -153,6 +153,9 @@ namespace RageLib.Resources.GTA5.PC.Meta
             uint ptrOffset = (pointer >> 12) & 0xFFFFF;
             var ptrblock = (ptrIndex < meta.DataBlocks.Count) ? meta.DataBlocks[(int)ptrIndex] : null;
 
+            if (ptrblock == null)
+                return items;
+
             int byteoffset = (int)ptrOffset;
             int itemoffset = byteoffset / itemSize;
 
@@ -161,6 +164,7 @@ namespace RageLib.Resources.GTA5.PC.Meta
             while (itemsLeft > 0)
             {
                 int blockcount = ptrblock.DataLength / itemSize;
+
                 int itemcount = blockcount - itemoffset;
 
                 if (itemcount > itemsLeft)
@@ -181,6 +185,9 @@ namespace RageLib.Resources.GTA5.PC.Meta
 
                 ptrIndex++;
                 ptrblock = (ptrIndex < meta.DataBlocks.Count) ? meta.DataBlocks[(int)ptrIndex] : null;
+
+                if (ptrblock == null)
+                    return items;
 
             }
 
@@ -335,12 +342,34 @@ namespace RageLib.Resources.GTA5.PC.Meta
             for (int i = 0; i < count; i++)
             {
                 int offset = ptroffset + (i * ptrsize);
+
                 if (offset >= ptrblock.Data.Count)
-                { break; }
+                    break;
+
                 ptrs[i] = ConvertData<MetaPOINTER>(ptrblock.Data, offset);
             }
 
             return ptrs;
+        }
+
+        public static int GetDataOffset(DataBlock block, MetaPOINTER ptr)
+        {
+            if (block == null) return -1;
+            var offset = ptr.Offset;
+            if (ptr.ExtraOffset != 0)
+            { }
+            //offset += (int)ptr.ExtraOffset;
+            if ((offset < 0) || (block.Data == null) || (offset >= block.Data.Length))
+            { return -1; }
+            return offset;
+        }
+
+        public static T GetData<T>(MetaFile meta, MetaPOINTER ptr) where T : struct
+        {
+            var block = meta.GetBlock(ptr.BlockID);
+            var offset = GetDataOffset(block, ptr);
+            if (offset < 0) return new T();
+            return ConvertData<T>(block.Data, offset);
         }
 
         public static string GetCSharpTypeName(StructureEntryDataType t)
