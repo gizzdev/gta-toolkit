@@ -101,42 +101,22 @@ namespace RageLib.Resources.GTA5.PC.Drawables
             this.ShaderGroup = reader.ReadBlockAt<ShaderGroup>(
                 this.ShaderGroupPointer // offset
             );
+
             this.Skeleton = reader.ReadBlockAt<SkeletonData>(
                 this.SkeletonPointer // offset
             );
 
-            try
-            {
-                this.DrawableModelsMedium = reader.ReadBlockAt<ResourcePointerList64<DrawableModel>>(
-                    this.DrawableModelsMediumPointer // offset
-                );
-            }
-            catch(Exception e)
-            {
+            this.DrawableModelsMedium = reader.ReadBlockAt<ResourcePointerList64<DrawableModel>>(
+                this.DrawableModelsMediumPointer // offset
+            );
 
-            }
+            this.DrawableModelsLow = reader.ReadBlockAt<ResourcePointerList64<DrawableModel>>(
+                this.DrawableModelsLowPointer // offset
+            );
 
-            try
-            {
-                this.DrawableModelsLow = reader.ReadBlockAt<ResourcePointerList64<DrawableModel>>(
-                    this.DrawableModelsLowPointer // offset
-                );
-            }
-            catch(Exception e)
-            {
-
-            }
-
-            try
-            {
-                this.DrawableModelsVeryLow = reader.ReadBlockAt<ResourcePointerList64<DrawableModel>>(
-                    this.DrawableModelsVeryLowPointer // offset
-                );
-            }
-            catch (Exception e)
-            {
-
-            }
+            this.DrawableModelsVeryLow = reader.ReadBlockAt<ResourcePointerList64<DrawableModel>>(
+                this.DrawableModelsVeryLowPointer // offset
+            );
 
             this.Joints = reader.ReadBlockAt<Joints>(
                 this.JointsPointer // offset
