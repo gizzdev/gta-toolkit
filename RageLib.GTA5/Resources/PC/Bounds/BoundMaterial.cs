@@ -28,7 +28,7 @@ namespace RageLib.Resources.GTA5.PC.Bounds
 
         // structure data
         public byte MaterialIndex;
-        public byte ProcIc;
+        public byte ProcId;
         public byte RoomId_And_PedDensity;  // First 5 bits for RoomId, Last 3 bits for PedDensity
         public byte Unknown_3h;
         public byte Unknown_4h;
@@ -54,7 +54,7 @@ namespace RageLib.Resources.GTA5.PC.Bounds
         {
             // read structure data
             this.MaterialIndex = reader.ReadByte();
-            this.ProcIc = reader.ReadByte();
+            this.ProcId = reader.ReadByte();
             this.RoomId_And_PedDensity = reader.ReadByte();
             this.Unknown_3h = reader.ReadByte();
             this.Unknown_4h = reader.ReadByte();
@@ -69,7 +69,7 @@ namespace RageLib.Resources.GTA5.PC.Bounds
         {
             // write structure data
             writer.Write(this.MaterialIndex);
-            writer.Write(this.ProcIc);
+            writer.Write(this.ProcId);
             writer.Write(this.RoomId_And_PedDensity);
             writer.Write(this.Unknown_3h);
             writer.Write(this.Unknown_4h);
