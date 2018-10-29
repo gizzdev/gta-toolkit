@@ -21,19 +21,19 @@
 */
 
 using System;
-using System.Collections.Generic;
+using RageLib.GTA5.Resources.PC;
+using RageLib.GTA5.ResourceWrappers.PC.Meta.Structures;
 using RageLib.Resources.GTA5.PC.Meta;
-using SharpDX;
 
 namespace RageLib.Resources.GTA5.PC.GameFiles
 {
     public class YtypFile : GameFileBase_Resource<MetaFile>
     {
-        public RageLib.GTA5.ResourceWrappers.PC.Meta.Structures.CMapTypes CMapTypes;
+        public RageLib.GTA5.ResourceWrappers.PC.Meta.Structures.MCMapTypes CMapTypes;
 
         public YtypFile()
         {
-            this.CMapTypes = new RageLib.GTA5.ResourceWrappers.PC.Meta.Structures.CMapTypes();
+            this.CMapTypes = new MCMapTypes();
         }
 
         public override void Parse()
@@ -44,7 +44,7 @@ namespace RageLib.Resources.GTA5.PC.GameFiles
                 throw new Exception("CMapTypes block not found !");
 
             var CMapTypes = MetaUtils.ConvertData<CMapTypes>(CMapTypesBlocks[0]);
-            this.CMapTypes = new RageLib.GTA5.ResourceWrappers.PC.Meta.Structures.CMapTypes();
+            this.CMapTypes = new MCMapTypes();
 
             this.CMapTypes.Parse(this.ResourceFile.ResourceData, CMapTypes);
         }
@@ -57,7 +57,7 @@ namespace RageLib.Resources.GTA5.PC.GameFiles
 
             this.CMapTypes.Build(mb, true);
 
-            ResourceFile.Version = 2;
+            ResourceFile.Version = ResourceFileTypes_GTA5_pc.Types.Version;
             ResourceFile.ResourceData = this.CMapTypes.Meta;
         }
 

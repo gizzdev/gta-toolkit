@@ -21,19 +21,19 @@
 */
 
 using System;
-using System.Collections.Generic;
+using RageLib.GTA5.Resources.PC;
+using RageLib.GTA5.ResourceWrappers.PC.Meta.Structures;
 using RageLib.Resources.GTA5.PC.Meta;
-using SharpDX;
 
 namespace RageLib.Resources.GTA5.PC.GameFiles
 {
     public class YmapFile : GameFileBase_Resource<MetaFile>
     {
-        public RageLib.GTA5.ResourceWrappers.PC.Meta.Structures.CMapData CMapData;
+        public MCMapData CMapData;
 
         public YmapFile()
         {
-            this.CMapData = new RageLib.GTA5.ResourceWrappers.PC.Meta.Structures.CMapData();
+            this.CMapData = new MCMapData();
         }
 
         public override void Parse()
@@ -44,7 +44,7 @@ namespace RageLib.Resources.GTA5.PC.GameFiles
                 throw new Exception("CMapData block not found !");
 
             var CMapData = MetaUtils.ConvertData<CMapData>(CMapDataBlocks[0]);
-            this.CMapData = new RageLib.GTA5.ResourceWrappers.PC.Meta.Structures.CMapData();
+            this.CMapData = new MCMapData();
 
             this.CMapData.Parse(this.ResourceFile.ResourceData, CMapData);
         }
@@ -57,7 +57,7 @@ namespace RageLib.Resources.GTA5.PC.GameFiles
 
             this.CMapData.Build(mb, true);
 
-            ResourceFile.Version = 2;
+            ResourceFile.Version = ResourceFileTypes_GTA5_pc.Maps.Version;
             ResourceFile.ResourceData = this.CMapData.Meta;
         }
 
