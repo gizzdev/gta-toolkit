@@ -25,5 +25,31 @@ namespace RageLib.Resources.GTA5.PC.Meta
     public struct ArrayOfBytes12 //array of 12 bytes
     {
         public byte b00, b01, b02, b03, b04, b05, b06, b07, b08, b09, b10, b11;
+
+        public void SetByte(int num, byte val)
+        {
+            switch(num)
+            {
+                case 0: b00 = val; break;
+                case 1: b01 = val; break;
+                case 2: b02 = val; break;
+                case 3: b03 = val; break;
+                case 4: b04 = val; break;
+                case 5: b05 = val; break;
+                case 6: b06 = val; break;
+                case 7: b07 = val; break;
+                case 8: b08 = val; break;
+                case 9: b09 = val; break;
+                case 10: b10 = val; break;
+                case 11: b11 = val; break;
+                default: break;
+            }
+        }
+
+        public void SetBytes(byte[] vals)
+        {
+            for (int i = 0; i < vals.Length; i++)
+                this.SetByte(i, vals[i]);
+        }
     }
 }
