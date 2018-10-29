@@ -40,9 +40,74 @@ namespace RageLib.Resources.GTA5.PC.GameFiles
         void Build();
     }
 
+    public abstract class GameFileBase : IGameFile
+    {
+        public Stream Stream;
+
+        public GameFileBase()
+        {
+            this.Stream = null;
+        }
+
+        public void Load(string fileName)
+        {
+            byte[] data = File.ReadAllBytes(fileName);
+            this.Load(data);
+        }
+
+        public void Load(Stream stream)
+        {
+            this.Stream = stream;
+            this.Stream.Position = 0;
+            this.Parse();
+        }
+
+        public void Load(byte[] data)
+        {
+            this.Stream = new MemoryStream();
+
+            this.Stream.Write(data, 0, data.Length);
+            this.Stream.Position = 0;
+            this.Parse();
+        }
+
+        public void Save(string fileName)
+        {
+            this.Stream.Position = 0;
+            this.Build();
+
+            using (var fs = new FileStream(fileName, FileMode.OpenOrCreate, FileAccess.Write, FileShare.None))
+            {
+                this.Stream.CopyTo(fs);
+            }
+        }
+
+        public void Save(Stream stream)
+        {
+            this.Stream.Position = 0;
+            this.Build();
+            this.Stream.CopyTo(stream);
+        }
+
+        public byte[] Save()
+        {
+            this.Stream.Position = 0;
+            this.Build();
+
+            using (var ms = new MemoryStream())
+            {
+                this.Stream.CopyTo(ms);
+                return ms.ToArray();
+            }
+        }
+
+        public abstract void Parse();
+        public abstract void Build();
+    }
+
     public abstract class GameFileBase_Resource<T> : IGameFile where T : IResourceBlock, new()
     {
-        protected ResourceFile_GTA5_pc<T> ResourceFile;
+        public ResourceFile_GTA5_pc<T> ResourceFile;
 
         public GameFileBase_Resource()
         {
