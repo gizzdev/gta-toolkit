@@ -30,7 +30,7 @@ namespace RageLib.Resources.GTA5.PC.Meta
         public override long Length => 0x10;
 
         // structure data
-        public int StructureNameHash { get; set; }
+        public MetaName StructureNameHash { get; set; }
         public int DataLength { get; set; }
         public long DataPointer { get; private set; }
 
@@ -43,7 +43,7 @@ namespace RageLib.Resources.GTA5.PC.Meta
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
             // read structure data
-            this.StructureNameHash = reader.ReadInt32();
+            this.StructureNameHash = (MetaName) reader.ReadInt32();
             this.DataLength = reader.ReadInt32();
             this.DataPointer = reader.ReadInt64();
 
@@ -64,7 +64,7 @@ namespace RageLib.Resources.GTA5.PC.Meta
             this.DataPointer = this.Data?.Position ?? 0;
 
             // write structure data
-            writer.Write(this.StructureNameHash);
+            writer.Write((int) this.StructureNameHash);
             writer.Write(this.DataLength);
             writer.Write(this.DataPointer);
         }
