@@ -25,6 +25,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using RageLib.GTA5.Archives;
 using RageLib.GTA5.Cryptography;
 using RageLib.GTA5.Utilities;
 using RageLib.Hash;
@@ -39,8 +40,8 @@ namespace GenerateMetaEnumsAndStructs
         static Dictionary<int, EnumInfo> Enums = new Dictionary<int, EnumInfo>();
         static Dictionary<int, StructureInfo> Structures = new Dictionary<int, StructureInfo>();
         static Dictionary<int, long> StructuresLengths = new Dictionary<int, long>();
-        static List<StructureInfo> StructureInfos = new List<StructureInfo>();
-        static List<EnumInfo> EnumInfos = new List<EnumInfo>();
+        static HashSet<StructureInfo> StructureInfos = new HashSet<StructureInfo>(new StructureInfoComparer());
+        static HashSet<EnumInfo> EnumInfos = new HashSet<EnumInfo>(new EnumInfoComparer());
         static Dictionary<StructureInfo, List<EnumInfo>> StructureEnums = new Dictionary<StructureInfo, List<EnumInfo>>();
         static Dictionary<StructureInfo, List<int>> StructureChildren = new Dictionary<StructureInfo, List<int>>();
         static void Main(string[] args)
@@ -70,18 +71,17 @@ namespace GenerateMetaEnumsAndStructs
                 GenerateStructureData(sbs, sbsi);
                 GenerateEnumData(sbei);
                 GenerateStructureEnumInfos(sbsei);
-                GenerateStructureChildInfos(sbsci);
 
-                var data = CompileData(sbmt, sbei, sbsi, sbe, sbs, sbsei, sbsci);
+                var _data = CompileData(sbmt, sbei, sbsi, sbe, sbs, sbsei, sbsci);
 
-                File.WriteAllText("MetaTypes.cs", data);
+                File.WriteAllText("MetaTypes.cs", _data);
 
                 Environment.Exit(0);
             });
 
             ArchiveUtilities.ForEachFile(GTAVDir, (fullName, file, encryption) =>
             {
-                if(file.Name.EndsWith(".ymap") || file.Name.EndsWith(".ytyp"))
+                if(file.Name.EndsWith(".ymap") || file.Name.EndsWith(".ytyp") || file.Name.EndsWith(".ymt"))
                 {
                     using (MemoryStream ms = new MemoryStream())
                     {
@@ -104,7 +104,44 @@ namespace GenerateMetaEnumsAndStructs
 
                     }
                 }
+
+                if (/*file.Name.EndsWith(".ymap") || file.Name.EndsWith(".ytyp") || */file.Name.EndsWith(".ymt"))
+                {
+                    using (MemoryStream ms = new MemoryStream())
+                    {
+                        file.Export(ms);
+
+                        try
+                        {
+
+                            var res = new ResourceFile_GTA5_pc<MetaFile>();
+
+                            res.Load(ms);
+
+                            var meta = res.ResourceData;
+
+                            GetEnums(meta, Enums, sbe);
+                            GetStructures(meta, Structures);
+
+                        }
+                        catch (Exception e)
+                        {
+
+                        }
+
+                    }
+                }
             });
+
+            Console.Error.WriteLine("Generating structure and enum infos for gathered data");
+
+            GenerateStructureData(sbs, sbsi);
+            GenerateEnumData(sbei);
+            GenerateStructureEnumInfos(sbsei);
+
+            var data = CompileData(sbmt, sbei, sbsi, sbe, sbs, sbsei, sbsci);
+
+            File.WriteAllText("MetaTypes.cs", data);
         }
 
         static void GetEnums(MetaFile meta, Dictionary<int, EnumInfo> enums, StringBuilder sb)
@@ -113,6 +150,11 @@ namespace GenerateMetaEnumsAndStructs
             {
                 foreach (var ei in meta.EnumInfos)
                 {
+                    if (!EnumInfos.Contains(ei))
+                    {
+                        EnumInfos.Add(ei);
+                    }
+
                     if (!enums.ContainsKey(ei.EnumKey))
                     {
                         var enumName = GetSafeName(ei.EnumNameHash, ei.EnumKey);
@@ -128,8 +170,6 @@ namespace GenerateMetaEnumsAndStructs
                             sb.AppendFormat("\t\t{0} = {1},\n", entryName, entry.EntryValue);
                         }
 
-                        EnumInfos.Add(ei);
-
                         sb.AppendLine("\t}\n");
 
                         enums.Add(ei.EnumKey, ei);
@@ -142,10 +182,13 @@ namespace GenerateMetaEnumsAndStructs
         {
             if (meta.StructureInfos != null)
             {
-                var data = new Dictionary<int, string>();
-
                 foreach (var si in meta.StructureInfos)
                 {
+                    if (!StructureInfos.Contains(si))
+                    {
+                        StructureInfos.Add(si);
+                    }
+
                     if (!structs.ContainsKey(si.StructureKey))
                     {
                         Console.Error.WriteLine("STRUCT " + GetSafeName(si.StructureNameHash, si.StructureKey));
@@ -160,8 +203,6 @@ namespace GenerateMetaEnumsAndStructs
 
                         if (!StructureChildren.ContainsKey(si))
                             StructureChildren.Add(si, new List<int>());
-
-                        StructureInfos.Add(si);
                     }
                 }
 
@@ -269,7 +310,7 @@ namespace GenerateMetaEnumsAndStructs
         {
             switch (t)
             {
-                case StructureEntryDataType.Boolean: return "bool";
+                case StructureEntryDataType.Boolean: return "byte";
                 case StructureEntryDataType.SignedByte: return "sbyte";
                 case StructureEntryDataType.UnsignedByte: return "byte";
                 case StructureEntryDataType.SignedShort: return "short";
@@ -287,10 +328,9 @@ namespace GenerateMetaEnumsAndStructs
                 case StructureEntryDataType.IntFlags1: return "int";
                 case StructureEntryDataType.IntFlags2: return "int";
 
-                case StructureEntryDataType.ArrayOfChars: return "ArrayOfChars64";
-
                 case StructureEntryDataType.Array:
                 case StructureEntryDataType.ArrayOfBytes:
+                case StructureEntryDataType.ArrayOfChars:
                 case StructureEntryDataType.DataBlockPointer:
                 case StructureEntryDataType.CharPointer:
                 case StructureEntryDataType.StructurePointer:
@@ -351,7 +391,7 @@ namespace GenerateMetaEnumsAndStructs
         static string GenerateStructureDefiniton(StructureInfo def)
         {
             var sb = new StringBuilder();
-
+            var childStructures = new List<int>();
             var structureName = GetSafeName(def.StructureNameHash, def.StructureKey);
             var structureKeyName = GetString(def.StructureKey);
             int unusedCount = 0;
@@ -367,8 +407,9 @@ namespace GenerateMetaEnumsAndStructs
             sbc.AppendLine("using RageLib.Resources.GTA5.PC.Meta;\n");
             sbc.AppendLine("namespace RageLib.GTA5.ResourceWrappers.PC.Meta.Structures");
             sbc.AppendLine("{");
-            sbc.AppendFormat("\tpublic class {0} : MetaStructureWrapper<RageLib.Resources.GTA5.PC.Meta.{0}>\n", structureName);
+            sbc.AppendFormat("\tpublic class M{0} : MetaStructureWrapper<{0}>\n", structureName);
             sbc.AppendLine("\t{");
+            sbc.AppendFormat("\t\tpublic static MetaName _MetaName = {0};\n", GetMetaNameString(def.StructureNameHash));
             sbc.AppendLine("\t\tpublic MetaFile Meta;");
 
             sb.AppendFormat("\t[StructLayout(LayoutKind.Sequential)] public struct {0} // {1} bytes, Key:{2}\n", structureName, def.StructureLength, structureKeyName);
@@ -382,11 +423,11 @@ namespace GenerateMetaEnumsAndStructs
 
                 EnumInfo matchingEnum = null;
 
-                for (int j = 0; j < EnumInfos.Count; j++)
+                foreach(var ei in EnumInfos)
                 {
-                    if (entry.ReferenceKey == EnumInfos[j].EnumNameHash)
+                    if (entry.ReferenceKey == ei.EnumNameHash)
                     {
-                        matchingEnum = EnumInfos[j];
+                        matchingEnum = ei;
                         StructureEnums[def].Add(matchingEnum);
                         break;
                     }
@@ -400,13 +441,7 @@ namespace GenerateMetaEnumsAndStructs
 
                     while (remaining > 0)
                     {
-                        if (remaining % 8 == 0)
-                        {
-                            sb.AppendFormat("\t\tpublic {0} {1}; // {2}\n", "long", "Unused" + (unusedCount++), offset, 8);
-                            offset += 8;
-                            remaining -= 8;
-                        }
-                        else if (remaining % 4 == 0)
+                        if (remaining % 4 == 0)
                         {
                             sb.AppendFormat("\t\tpublic {0} {1}; // {2}\n", "uint", "Unused" + (unusedCount++), offset, 4);
                             offset += 4;
@@ -434,17 +469,23 @@ namespace GenerateMetaEnumsAndStructs
                     var CSharpTypeName = GetCSharpTypeName(structEntry.DataType);
                     long structureSize = GetStructureSize(structEntry.ReferenceKey);
 
+                    if (structEntry.ReferenceKey != 0 && !sc.Contains(structEntry.ReferenceKey))
+                        sc.Add(structEntry.ReferenceKey);
+
                     sb.AppendFormat("\t\tpublic Array_{0} {1}; // {2}  Key: {3}\n", GetCSharpTypeName(structEntry.DataType), entryName, entry.DataOffset, GetString(structEntry.ReferenceKey));
 
                     if (CSharpTypeName == "Structure" && structureSize != -1)
                     {
-                        sbc.AppendFormat("\t\tpublic List<{0}> {1};\n", GetSafeName(structEntry.ReferenceKey, structEntry.ReferenceKey), entryNameUpper);
+                        childStructures.Add(structEntry.ReferenceKey);
 
-                        sbcp.AppendFormat("\t\t\tvar {0} = MetaUtils.ConvertDataArray<RageLib.Resources.GTA5.PC.Meta.{1}>(meta, {2}.{0});\n", entryName, GetSafeName(structEntry.ReferenceKey, structEntry.ReferenceKey), structureName);
-                        sbcp.AppendFormat("\t\t\tthis.{0} = {3}?.Select(e => {{ var msw = new {1}(); msw.Parse(meta, e); return msw; }}).ToList();\n\n", entryNameUpper, GetSafeName(structEntry.ReferenceKey, structEntry.ReferenceKey), structureName, entryName);
+                        sbc.AppendFormat("\t\tpublic List<M{0}> {1};\n", GetSafeName(structEntry.ReferenceKey, structEntry.ReferenceKey), entryNameUpper);
+
+                        sbcp.AppendFormat("\t\t\tvar {0} = MetaUtils.ConvertDataArray<{1}>(meta, {2}.{0});\n", entryName, GetSafeName(structEntry.ReferenceKey, structEntry.ReferenceKey), structureName);
+                        sbcp.AppendFormat("\t\t\tthis.{0} = {3}?.Select(e => {{ var msw = new M{1}(); msw.Parse(meta, e); return msw; }}).ToList();\n\n", entryNameUpper, GetSafeName(structEntry.ReferenceKey, structEntry.ReferenceKey), structureName, entryName);
 
                         sbcb.AppendFormat("\t\t\tif(this.{0} != null)\n", entryNameUpper);
-                        sbcb.AppendFormat("\t\t\t\tthis.MetaStructure.{0} = mb.AddItemArrayPtr({1}, this.{2}.Select(e => e.MetaStructure).ToArray());\n", entryName, GetMetaNameString(structEntry.ReferenceKey), entryNameUpper);
+                        sbcb.AppendFormat("\t\t\t\tthis.MetaStructure.{0} = mb.AddItemArrayPtr({1}, this.{2}.Select(e => {{ e.Build(mb); return e.MetaStructure; }}).ToArray());\n", entryName, GetMetaNameString(structEntry.ReferenceKey), entryNameUpper);
+                          sbcb.AppendFormat("\t\t\tM{0}.AddEnumAndStructureInfo(mb);          \n\n", GetSafeName(structEntry.ReferenceKey, structEntry.ReferenceKey));
                     }
                     else
                     {
@@ -460,7 +501,8 @@ namespace GenerateMetaEnumsAndStructs
                 {
                     if (entry.DataType == StructureEntryDataType.Structure)
                     {
-                        if(entry.EntryNameHash == 256)
+
+                        if (entry.EntryNameHash == 256)
                         {
                         }
                         else
@@ -470,10 +512,21 @@ namespace GenerateMetaEnumsAndStructs
 
                             if (structureSize == -1)
                             {
-                                sb.AppendFormat("\t\tpublic Array_{0} {1}; // {2}  Key: {3}\n", GetString(entry.ReferenceTypeIndex), entryName, entry.DataOffset, GetString(entry.ReferenceTypeIndex));
+                                var structEntry = def.Entries[entry.ReferenceTypeIndex];
+                                var CSharpTypeName = GetCSharpTypeName(entry.DataType);
+
+                                if (!sc.Contains(structEntry.ReferenceKey))
+                                    sc.Add(structEntry.ReferenceKey);
+
+                                if(CSharpTypeName == "Structure")
+                                {
+                                    childStructures.Add(entry.ReferenceKey);
+                                }
+
+                                sb.AppendFormat("\t\tpublic Array_{0} {1}; // {2}  Key: {3}\n", CSharpTypeName, entryName, entry.DataOffset, GetString(entry.ReferenceKey));
                                 sbc.AppendFormat("\t\tpublic Array_{0};\n", entryTypeString, entryNameUpper);
                                 sbcp.AppendFormat("\t\t\t// this.{0} = {1}.{2};\n", entryNameUpper, structureName, entryName);
-                                sbcb.AppendFormat("\t\t\t// this._{0}.{1} = this.{2};\n", structureName, entryName, entryNameUpper);
+                                sbcb.AppendFormat("\t\t\t// this._{0}.{1} = this.{2};\n\n", structureName, entryName, entryNameUpper);
 
                                 offset += GetCSharpTypeSize(entry.DataType, entry.Length);
                             }
@@ -482,27 +535,17 @@ namespace GenerateMetaEnumsAndStructs
                                 if (!sc.Contains(entry.ReferenceKey))
                                     sc.Add(entry.ReferenceKey);
 
+                                childStructures.Add(entry.ReferenceKey);
+
                                 sb.AppendFormat("\t\tpublic {0} {1}; // {2}  Key: {3}\n", GetSafeName(entry.ReferenceKey, entry.ReferenceTypeIndex), entryName, entry.DataOffset, GetString(entry.ReferenceKey));
-                                sbc.AppendFormat("\t\tpublic {0} {1};\n", GetSafeName(entry.ReferenceKey, entry.ReferenceKey), entryNameUpper);
+                                sbc.AppendFormat("\t\tpublic M{0} {1};\n", GetSafeName(entry.ReferenceKey, entry.ReferenceKey), entryNameUpper);
 
-                                sbcp.AppendFormat("\t\t\tvar {0}Blocks = meta.FindBlocks(RageLib.Resources.GTA5.PC.Meta.{1});\n", entryName, GetMetaNameString(entry.ReferenceKey));
-                                sbcp.AppendLine();
-                                sbcp.AppendFormat("\t\t\tif({0}Blocks.Length > 0)\n", entryName);
-                                sbcp.AppendLine("\t\t\t{");
-                                sbcp.AppendFormat("\t\t\t\tvar {0} = MetaUtils.GetTypedData<RageLib.Resources.GTA5.PC.Meta.{1}>(meta, {2});\n", entryName, GetSafeName(entry.ReferenceKey, entry.ReferenceTypeIndex), GetMetaNameString(entry.ReferenceKey));
-                                sbcp.AppendFormat("\t\t\t\tthis.{0} = new {1}();\n", entryNameUpper, GetSafeName(entry.ReferenceKey, entry.ReferenceTypeIndex));
-                                sbcp.AppendFormat("\t\t\t\tthis.{0}.Parse(meta, {1});\n", entryNameUpper, entryName);
-                                sbcp.AppendLine("\t\t\t}");
-                                sbcp.AppendLine("\t\t\telse");
-                                sbcp.AppendLine("\t\t\t{");
-                                sbcp.AppendFormat("\t\t\t    this.{0} = null;\n", entryNameUpper);
-                                sbcp.AppendLine("\t\t\t}\n");
+                                sbcp.AppendFormat("\t\t\tthis.{0} = new {1}();\n", entryNameUpper, GetSafeName(entry.ReferenceKey, entry.ReferenceKey));
+                                sbcp.AppendFormat("\t\t\tthis.{0}.Parse(meta, {1}.{2});\n", entryNameUpper, structureName, entryName);
 
-                                sbcb.AppendFormat("\t\t\tif(this.{0} != null)\n", entryNameUpper);
-                                sbcb.AppendLine("\t\t\t{");
-                                sbcb.AppendFormat("\t\t\t\tthis.{0}.Build(mb);\n", entryNameUpper);
-                                sbcb.AppendFormat("\t\t\t\tthis.MetaStructure.{0} = this.{1}.MetaStructure;\n", entryName, entryNameUpper);
-                                sbcb.AppendLine("\t\t\t}\n");
+                                sbcb.AppendFormat("\t\t\tthis.{0}.Build(mb);\n", entryNameUpper);
+                                sbcb.AppendFormat("\t\t\tthis.MetaStructure.{0} = this.{1}.MetaStructure;\n", entryName, entryNameUpper);
+                                  sbcb.AppendFormat("\t\t\tM{0}.AddEnumAndStructureInfo(mb);          \n\n", GetSafeName(entry.ReferenceKey, entry.ReferenceKey));
 
                                 offset += structureSize;
                             }
@@ -510,6 +553,7 @@ namespace GenerateMetaEnumsAndStructs
                     }
                     else if(entry.DataType == StructureEntryDataType.StructurePointer)
                     {
+
                     }
                     else
                     {
@@ -552,13 +596,7 @@ namespace GenerateMetaEnumsAndStructs
 
             while (remaining2 > 0)
             {
-                if (remaining2 % 8 == 0)
-                {
-                    sb.AppendFormat("\t\tpublic {0} {1}; // {2}\n", "long", "Unused" + (unusedCount++), offset, 8);
-                    offset += 8;
-                    remaining2 -= 8;
-                }
-                else if (remaining2 % 4 == 0)
+                if (remaining2 % 4 == 0)
                 {
                     sb.AppendFormat("\t\tpublic {0} {1}; // {2}\n", "uint", "Unused" + (unusedCount++), offset, 4);
                     offset += 4;
@@ -580,11 +618,29 @@ namespace GenerateMetaEnumsAndStructs
 
             sb.AppendLine("\t}\n\n");
 
-            sbc.AppendFormat("\n\t\tpublic {0}()\n", structureName);
+            sbc.AppendFormat("\n\t\tpublic M{0}()\n", structureName);
             sbc.AppendLine("\t\t{");
             sbc.AppendFormat("\t\t\tthis.MetaName = {0};\n", GetMetaNameString(def.StructureNameHash));
             sbc.AppendFormat("\t\t\tthis.MetaStructure = new RageLib.Resources.GTA5.PC.Meta.{0}();\n", structureName);
             sbc.AppendLine("\t\t}");
+
+            sbc.AppendLine();
+            sbc.AppendFormat("\t\tpublic static void AddEnumAndStructureInfo(MetaBuilder mb)\n", structureName);
+            sbc.AppendLine("\t\t{");
+
+            sbc.AppendFormat("\t\t\tvar enumInfos = MetaInfo.GetStructureEnumInfo(M{0}._MetaName);\n", structureName);
+            sbc.AppendLine();
+            sbc.AppendLine("\t\t\tfor (int i = 0; i < enumInfos.Length; i++)");
+            sbc.AppendLine("\t\t\t\tmb.AddEnumInfo((MetaName) enumInfos[i].EnumNameHash);");
+            sbc.AppendLine();
+            sbc.AppendFormat("\t\t\tmb.AddStructureInfo(M{0}._MetaName);\n", structureName);
+
+            for (int i = 0; i < childStructures.Count; i++)
+            {
+                sbc.AppendFormat("\t\t\tmb.AddStructureInfo({0});\n", GetMetaNameString(childStructures[i]));
+            }
+
+            sbc.AppendLine("\t\t}\n");
 
             sbc.AppendLine();
             sbc.AppendFormat("\t\tpublic override void Parse(MetaFile meta, RageLib.Resources.GTA5.PC.Meta.{0} {0})\n", structureName);
@@ -599,18 +655,9 @@ namespace GenerateMetaEnumsAndStructs
             sbc.AppendLine("\t\t{");
             sbc.Append(sbcb);
             sbc.AppendLine();
-            sbc.AppendLine("\t\t\tvar enumInfos = MetaInfo.GetStructureEnumInfo(this.MetaName);");
-            sbc.AppendLine("\t\t\tvar structureInfo = MetaInfo.GetStructureInfo(this.MetaName);");
-            sbc.AppendLine("\t\t\tvar childStructureInfos = MetaInfo.GetStructureChildInfo(this.MetaName);");
-            sbc.AppendLine();
-            sbc.AppendLine("\t\t\tfor (int i = 0; i < enumInfos.Length; i++)");
-            sbc.AppendLine("\t\t\t\tmb.AddEnumInfo((MetaName) enumInfos[i].EnumNameHash);");
-            sbc.AppendLine();
-            sbc.AppendLine("\t\t\tmb.AddStructureInfo((MetaName) structureInfo.StructureNameHash);\n");
-            sbc.AppendLine();
-            sbc.AppendLine("\t\t\tfor (int i = 0; i < childStructureInfos.Length; i++)");
-            sbc.AppendLine("\t\t\t\tmb.AddStructureInfo((MetaName) childStructureInfos[i].StructureNameHash);");
-            sbc.AppendLine();
+
+              sbc.AppendFormat("\t\t\tM{0}.AddEnumAndStructureInfo(mb);          \n\n", structureName);
+
             sbc.AppendLine("\t\t\tif(isRoot)");
             sbc.AppendLine("\t\t\t{");
             sbc.AppendLine("\t\t\t\tmb.AddItem(this.MetaName, this.MetaStructure);\n");
@@ -683,13 +730,13 @@ namespace GenerateMetaEnumsAndStructs
             sbsi.AppendLine("\t\t\tswitch (name)");
             sbsi.AppendLine("\t\t\t{");
 
-            for (int i = 0; i < StructureInfos.Count; i++)
+            foreach(var si in StructureInfos)
             {
-                if(!StructuresLengths.ContainsKey(StructureInfos[i].StructureNameHash))
+                if(!StructuresLengths.ContainsKey(si.StructureNameHash))
                     continue;
 
-                string code = GenerateStructureDefiniton(StructureInfos[i]);
-                string code2 = GenerateStructureInfos(StructureInfos[i]);
+                string code = GenerateStructureDefiniton(si);
+                string code2 = GenerateStructureInfos(si);
                 sbs.Append(code);
                 sbsi.Append(code2);
             }
@@ -706,9 +753,9 @@ namespace GenerateMetaEnumsAndStructs
             sbei.AppendLine("\t\t\tswitch (name)");
             sbei.AppendLine("\t\t\t{");
 
-            for (int i = 0; i < EnumInfos.Count; i++)
+            foreach(var ei in EnumInfos)
             {
-                string code = GenerateEnumInfos(EnumInfos[i]);
+                string code = GenerateEnumInfos(ei);
                 sbei.Append(code);
             }
 
@@ -737,60 +784,34 @@ namespace GenerateMetaEnumsAndStructs
             sbsei.AppendLine("\t\t}");
         }
 
-        public static void GenerateStructureChildInfos(StringBuilder sbsci)
-        {
-            sbsci.AppendLine("\t\tpublic static StructureInfo[] GetStructureChildInfo(MetaName name)");
-            sbsci.AppendLine("\t\t{");
-            sbsci.AppendLine("\t\t\tvar structureInfos = new List<StructureInfo>();\n");
-            sbsci.AppendLine("\t\t\tswitch (name)");
-            sbsci.AppendLine("\t\t\t{");
-
-            foreach (var entry in StructureChildren)
-            {
-                var code = GenerateStructureChildInfoDefiniton(entry.Key, entry.Value);
-                sbsci.Append(code);
-            }
-
-            sbsci.AppendLine("\t\t\t\t\tdefault: break;");
-            sbsci.AppendLine("\t\t\t}");
-            sbsci.AppendLine("\t\t\treturn structureInfos.ToArray();");
-            sbsci.AppendLine("\t\t}");
-        }
-
         public static string GenerateStructureEnumInfoDefiniton(int name, List<EnumInfo> enums)
         {
-            lock(enums)
-            {
-                var sb = new StringBuilder();
+            var sb = new StringBuilder();
 
-                sb.AppendFormat("\t\t\t\tcase {0}: {{\n", GetMetaNameString(name));
+            sb.AppendFormat("\t\t\t\tcase {0}: {{\n", GetMetaNameString(name));
 
-                for (int i = 0; i < enums.Count; i++)
-                    sb.AppendFormat("\t\t\t\t\tenumInfos.Add(MetaInfo.GetEnumInfo({0}));\n", GetMetaNameString(enums[i].EnumNameHash));
+            for (int i = 0; i < enums.Count; i++)
+                sb.AppendFormat("\t\t\t\t\tenumInfos.Add(MetaInfo.GetEnumInfo({0}));\n", GetMetaNameString(enums[i].EnumNameHash));
 
-                sb.AppendLine("\t\t\t\t\tbreak;");
-                sb.AppendLine("\t\t\t\t}");
+            sb.AppendLine("\t\t\t\t\tbreak;");
+            sb.AppendLine("\t\t\t\t}");
 
-                return sb.ToString();
-            }
+            return sb.ToString();
         }
 
         public static string GenerateStructureChildInfoDefiniton(StructureInfo si, List<int> nameHashes)
         {
-            lock (nameHashes)
-            {
-                var sb = new StringBuilder();
+            var sb = new StringBuilder();
 
-                sb.AppendFormat("\t\t\t\tcase {0}: {{\n", GetMetaNameString(si.StructureNameHash));
+            sb.AppendFormat("\t\t\t\tcase {0}: {{\n", GetMetaNameString(si.StructureNameHash));
 
-                for (int i = 0; i < nameHashes.Count; i++)
-                    sb.AppendFormat("\t\t\t\t\tstructureInfos.Add(MetaInfo.GetStructureInfo({0}));\n", GetMetaNameString(nameHashes[i]));
+            for (int i = 0; i < nameHashes.Count; i++)
+                sb.AppendFormat("\t\t\t\t\tstructureInfos.Add(MetaInfo.GetStructureInfo({0}));\n", GetMetaNameString(nameHashes[i]));
 
-                sb.AppendLine("\t\t\t\t\tbreak;");
-                sb.AppendLine("\t\t\t\t}");
+            sb.AppendLine("\t\t\t\t\tbreak;");
+            sb.AppendLine("\t\t\t\t}");
 
-                return sb.ToString();
-            }
+            return sb.ToString();
         }
 
         public static string CompileData(StringBuilder sbmt, StringBuilder sbei, StringBuilder sbsi, StringBuilder sbe, StringBuilder sbs, StringBuilder sbsei, StringBuilder sbsci)
@@ -827,6 +848,32 @@ namespace GenerateMetaEnumsAndStructs
             sb.AppendLine("}");
 
             return sb.ToString();
+        }
+    }
+
+    class EnumInfoComparer : IEqualityComparer<EnumInfo>
+    {
+        public bool Equals(EnumInfo a, EnumInfo b)
+        {
+            return a.EnumKey == b.EnumKey;
+        }
+
+        public int GetHashCode(EnumInfo e)
+        {
+            return e.EnumKey;
+        }
+    }
+
+    class StructureInfoComparer : IEqualityComparer<StructureInfo>
+    {
+        public bool Equals(StructureInfo a, StructureInfo b)
+        {
+            return a.StructureKey == b.StructureKey;
+        }
+
+        public int GetHashCode(StructureInfo e)
+        {
+            return e.StructureKey;
         }
     }
 }
