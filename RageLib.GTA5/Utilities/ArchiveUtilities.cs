@@ -78,7 +78,7 @@ namespace RageLib.GTA5.Utilities
             }
         }
 
-        private static void ForEachFile(string fullPathName, IArchiveDirectory directory, RageArchiveEncryption7 encryption, ProcessFileDelegate processDelegate)
+        public static void ForEachFile(string fullPathName, IArchiveDirectory directory, RageArchiveEncryption7 encryption, ProcessFileDelegate processDelegate)
         {
             foreach (var file in directory.GetFiles())
             {
