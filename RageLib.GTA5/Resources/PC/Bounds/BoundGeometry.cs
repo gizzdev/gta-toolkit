@@ -21,6 +21,8 @@
 */
 
 using RageLib.Resources.Common;
+using SharpDX;
+using System;
 using System.Collections.Generic;
 
 namespace RageLib.Resources.GTA5.PC.Bounds
@@ -80,6 +82,16 @@ namespace RageLib.Resources.GTA5.PC.Bounds
         public ResourceSimpleArray<BoundMaterial> Materials;
         public ResourceSimpleArray<uint_r> MaterialColours;
         public ResourceSimpleArray<byte_r> PolygonMaterialIndices;
+
+        public bool HasVertex(int idx)
+        {
+            return this.Vertices.Count > idx;
+        }
+
+        public Vector3 GetVector3Vertex(int idx)
+        {
+            return new Vector3(this.Vertices[idx].X, this.Vertices[idx].Y, this.Vertices[idx].Z) * ((Vector3)this.Quantum);
+        }
 
         /// <summary>
         /// Reads the data-block from a stream.
