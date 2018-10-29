@@ -42,7 +42,10 @@ namespace RageLib.Resources.GTA5.PC.Bounds
         public RAGE_Vector3 BoundingBoxMin;
         public uint Unknown_3Ch;
         public RAGE_Vector3 BoundingBoxCenter;
-        public uint Unknown_4Ch;
+        public byte MaterialIndex;
+        public byte ProceduralId;
+        public byte RoomId_And_PedDensity; //5bits for RoomID and then 3bits for PedDensity
+        public byte Unknown_4Fh;
         public RAGE_Vector3 CenterGravity;
         public byte PolyFlags;
         public byte MaterialColorIndex;
@@ -51,6 +54,18 @@ namespace RageLib.Resources.GTA5.PC.Bounds
         public float Unknown_64h;
         public float Unknown_68h;
         public float BoundingBoxVolume;
+
+        public int RoomId
+        {
+            get { return 0b00011111 & this.RoomId_And_PedDensity; }
+            set { this.RoomId_And_PedDensity = (byte)((this.RoomId_And_PedDensity & ~0b00011111) | value); }
+        }
+
+        public int PedDensity
+        {
+            get { return (0b11100000 & this.RoomId_And_PedDensity) >> 5; }
+            set { this.RoomId_And_PedDensity = (byte)((this.RoomId_And_PedDensity & ~0b11100000) | value << 5); }
+        }
 
         /// <summary>
         /// Reads the data-block from a stream.
@@ -71,7 +86,10 @@ namespace RageLib.Resources.GTA5.PC.Bounds
             this.BoundingBoxMin = reader.ReadBlock<RAGE_Vector3>();
             this.Unknown_3Ch = reader.ReadUInt32();
             this.BoundingBoxCenter = reader.ReadBlock<RAGE_Vector3>();
-            this.Unknown_4Ch = reader.ReadUInt32();
+            this.MaterialIndex = reader.ReadByte();
+            this.ProceduralId = reader.ReadByte();
+            this.RoomId_And_PedDensity = reader.ReadByte();
+            this.Unknown_4Fh = reader.ReadByte();
             this.CenterGravity = reader.ReadBlock<RAGE_Vector3>();
             this.PolyFlags = reader.ReadByte();
             this.MaterialColorIndex = reader.ReadByte();
@@ -101,7 +119,10 @@ namespace RageLib.Resources.GTA5.PC.Bounds
             writer.WriteBlock(this.BoundingBoxMin);
             writer.Write(this.Unknown_3Ch);
             writer.WriteBlock(this.BoundingBoxCenter);
-            writer.Write(this.Unknown_4Ch);
+            writer.Write(this.MaterialIndex);
+            writer.Write(this.ProceduralId);
+            writer.Write(this.RoomId_And_PedDensity);
+            writer.Write(this.Unknown_4Fh);
             writer.WriteBlock(this.CenterGravity);
             writer.Write(this.PolyFlags);
             writer.Write(this.MaterialColorIndex);
