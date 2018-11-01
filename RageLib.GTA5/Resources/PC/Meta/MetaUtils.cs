@@ -158,6 +158,7 @@ namespace RageLib.Resources.GTA5.PC.Meta
 
             int byteoffset = (int)ptrOffset;
             int itemoffset = byteoffset / itemSize;
+            int mod = byteoffset % itemSize;
 
             int c = 0;
 
@@ -172,7 +173,7 @@ namespace RageLib.Resources.GTA5.PC.Meta
 
                 for (int i = 0; i < itemcount; i++)
                 {
-                    int offset = (itemoffset + i) * itemSize;
+                    int offset = (itemoffset + i) * itemSize + (mod % 4);
                     int index = c + i;
                     items[index] = ConvertData<T>(ptrblock, offset);
                 }
