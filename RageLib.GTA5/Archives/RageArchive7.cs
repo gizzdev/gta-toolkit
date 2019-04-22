@@ -79,133 +79,104 @@ namespace RageLib.GTA5.Archives
         /// </summary>
         public void ReadHeader(byte[] aesKey = null, byte[] ngKey = null)
         {
-            var reader = new DataReader(BaseStream);
-            var posbak = reader.Position;
-            reader.Position = 0;
-
-            uint header_identifier = reader.ReadUInt32(); // 0x52504637
-            if (header_identifier != IDENT)
-                throw new Exception("The identifier " + header_identifier.ToString("X8") + " did not match the expected value of 0x52504637");
-
-            uint header_entriesCount = reader.ReadUInt32();
-            uint header_namesLength = reader.ReadUInt32();
-            uint header_encryption = reader.ReadUInt32();
-
-            byte[] entries_data_dec = null;
-            byte[] names_data_dec = null;
-
-            if (header_encryption == 0x04E45504F) // for OpenIV compatibility
+            DataReader dataReader = new DataReader(this.BaseStream, Endianess.LittleEndian);
+            long position = dataReader.Position;
+            dataReader.Position = 0L;
+            uint num = dataReader.ReadUInt32();
+            if (num != 0x52504637)
             {
-                // no encryption...
-                Encryption = RageArchiveEncryption7.None;
-                entries_data_dec = reader.ReadBytes(16 * (int)header_entriesCount);
-                names_data_dec = reader.ReadBytes((int)header_namesLength);
-
+                throw new Exception("The identifier " + num.ToString("X8") + " did not match the expected value of 0x52504637");
             }
-            else if (header_encryption == 0x0ffffff9)
+            uint num2 = dataReader.ReadUInt32();
+            uint count = dataReader.ReadUInt32();
+            uint num3 = dataReader.ReadUInt32();
+            byte[] buffer;
+            byte[] buffer2;
+            if (num3 == 0x4E45504F)
             {
-                // AES enceyption...                
-
-                Encryption = RageArchiveEncryption7.AES;
-
-                var entries_data = reader.ReadBytes(16 * (int)header_entriesCount);
-                entries_data_dec = AesEncryption.DecryptData(entries_data, aesKey);
-
-                var names_data = reader.ReadBytes((int)header_namesLength);
-                names_data_dec = AesEncryption.DecryptData(names_data, aesKey);
+                this.Encryption = RageArchiveEncryption7.None;
+                buffer = dataReader.ReadBytes(16 * (int) num2);
+                buffer2 = dataReader.ReadBytes((int)count);
+            }
+            else if (num3 == 0x0FFFFFF9)
+            {
+                this.Encryption = RageArchiveEncryption7.AES;
+                byte[] data = dataReader.ReadBytes(16 * (int)num2);
+                buffer = AesEncryption.DecryptData(data, aesKey, 1);
+                byte[] data2 = dataReader.ReadBytes((int)count);
+                buffer2 = AesEncryption.DecryptData(data2, aesKey, 1);
             }
             else
             {
-                // NG encryption...
-
-                Encryption = RageArchiveEncryption7.NG;
-
-                var entries_data = reader.ReadBytes(16 * (int)header_entriesCount);
-                entries_data_dec = GTA5Crypto.Decrypt(entries_data, ngKey);
-
-                var names_data = reader.ReadBytes((int)header_namesLength);
-                names_data_dec = GTA5Crypto.Decrypt(names_data, ngKey);
+                this.Encryption = RageArchiveEncryption7.NG;
+                byte[] data3 = dataReader.ReadBytes(16 * (int)num2);
+                buffer = GTA5Crypto.Decrypt(data3, ngKey);
+                byte[] data4 = dataReader.ReadBytes((int)count);
+                buffer2 = GTA5Crypto.Decrypt(data4, ngKey);
             }
-
-            var entries_reader = new DataReader(new MemoryStream(entries_data_dec));
-            var names_reader = new DataReader(new MemoryStream(names_data_dec));
-
-            var entries = new List<IRageArchiveEntry7>();
-            for (var index = 0; index < header_entriesCount; index++)
+            DataReader dataReader2 = new DataReader(new MemoryStream(buffer), Endianess.LittleEndian);
+            DataReader dataReader3 = new DataReader(new MemoryStream(buffer2), Endianess.LittleEndian);
+            List<IRageArchiveEntry7> list = new List<IRageArchiveEntry7>();
+            int num4 = 0;
+            while (num4 < num2)
             {
-                entries_reader.Position += 4;
-                int x = entries_reader.ReadInt32();
-                entries_reader.Position -= 8;
-
-                if (x == 0x7fffff00)
+                dataReader2.Position += 4L;
+                int num5 = dataReader2.ReadInt32();
+                dataReader2.Position -= 8L;
+                if (num5 == 0x7FFFFF00)
                 {
-                    // directory
-                    var e = new RageArchiveDirectory7();
-                    e.Read(entries_reader);
-
-                    names_reader.Position = e.NameOffset;
-                    e.Name = names_reader.ReadString();
-
-                    entries.Add(e);
+                    RageArchiveDirectory7 rageArchiveDirectory = new RageArchiveDirectory7();
+                    rageArchiveDirectory.Read(dataReader2);
+                    dataReader3.Position = (long)((ulong)rageArchiveDirectory.NameOffset);
+                    rageArchiveDirectory.Name = dataReader3.ReadString();
+                    list.Add(rageArchiveDirectory);
+                }
+                else if ((num5 & 0x80000000) == 0L)
+                {
+                    RageArchiveBinaryFile7 rageArchiveBinaryFile = new RageArchiveBinaryFile7();
+                    rageArchiveBinaryFile.Read(dataReader2);
+                    dataReader3.Position = rageArchiveBinaryFile.NameOffset;
+                    rageArchiveBinaryFile.Name = dataReader3.ReadString();
+                    list.Add(rageArchiveBinaryFile);
                 }
                 else
                 {
-                    if ((x & 0x80000000) == 0)
+                    RageArchiveResourceFile7 rageArchiveResourceFile = new RageArchiveResourceFile7();
+                    rageArchiveResourceFile.Read(dataReader2);
+                    if (rageArchiveResourceFile.FileSize == 0x00FFFFFF)
                     {
-                        // binary file
-                        var e = new RageArchiveBinaryFile7();
-                        e.Read(entries_reader);
-
-                        names_reader.Position = e.NameOffset;
-                        e.Name = names_reader.ReadString();
-
-                        entries.Add(e);
+                        dataReader.Position = 512 * rageArchiveResourceFile.FileOffset;
+                        byte[] array = dataReader.ReadBytes(16);
+                        rageArchiveResourceFile.FileSize = (uint)(array[7] | array[14] << 8 | array[5] << 16 | array[2] << 24);
                     }
-                    else
-                    {
-                        // resource file
-                        var e = new RageArchiveResourceFile7();
-                        e.Read(entries_reader);
-
-                        // there are sometimes resources with length=0xffffff which actually
-                        // means length>=0xffffff
-                        if (e.FileSize == 0xFFFFFF)
-                        {
-                            reader.Position = 512 * e.FileOffset;
-                            var buf = reader.ReadBytes(16);
-                            e.FileSize = ((uint)buf[7] << 0) | ((uint)buf[14] << 8) | ((uint)buf[5] << 16) | ((uint)buf[2] << 24);
-                        }
-
-                        names_reader.Position = e.NameOffset;
-                        e.Name = names_reader.ReadString();
-                        
-                        entries.Add(e);
-                    }
+                    dataReader3.Position = rageArchiveResourceFile.NameOffset;
+                    rageArchiveResourceFile.Name = dataReader3.ReadString();
+                    list.Add(rageArchiveResourceFile);
                 }
+                num4++;
             }
-
-            var stack = new Stack<RageArchiveDirectory7>();
-            stack.Push((RageArchiveDirectory7)entries[0]);
-            Root = (RageArchiveDirectory7)entries[0];
+            Stack<RageArchiveDirectory7> stack = new Stack<RageArchiveDirectory7>();
+            stack.Push((RageArchiveDirectory7)list[0]);
+            this.Root = (RageArchiveDirectory7)list[0];
             while (stack.Count > 0)
             {
-                var item = stack.Pop();
-
-                for (int index = (int)item.EntriesIndex; index < (item.EntriesIndex + item.EntriesCount); index++)
+                RageArchiveDirectory7 rageArchiveDirectory2 = stack.Pop();
+                int num6 = (int)rageArchiveDirectory2.EntriesIndex;
+                while ((long)num6 < (long)((ulong)(rageArchiveDirectory2.EntriesIndex + rageArchiveDirectory2.EntriesCount)))
                 {
-                    if (entries[index] is RageArchiveDirectory7)
+                    if (list[num6] is RageArchiveDirectory7)
                     {
-                        item.Directories.Add(entries[index] as RageArchiveDirectory7);
-                        stack.Push(entries[index] as RageArchiveDirectory7);
+                        rageArchiveDirectory2.Directories.Add(list[num6] as RageArchiveDirectory7);
+                        stack.Push(list[num6] as RageArchiveDirectory7);
                     }
                     else
                     {
-                        item.Files.Add(entries[index]);
+                        rageArchiveDirectory2.Files.Add(list[num6]);
                     }
+                    num6++;
                 }
             }
-
-            reader.Position = posbak;
+            dataReader.Position = position;
         }
 
         /// <summary>
@@ -213,166 +184,133 @@ namespace RageLib.GTA5.Archives
         /// </summary>
         public void WriteHeader(byte[] aesKey = null, byte[] ngKey = null)
         {
-            // backup position
-            var positionBackup = BaseStream.Position;
-
-            var writer = new DataWriter(BaseStream);
-
-
-            var entries = new List<IRageArchiveEntry7>();
-            var stack = new Stack<RageArchiveDirectory7>();
-            var nameOffset = 1;
-
-
-            entries.Add(Root);
-            stack.Push(Root);
-
-            var nameDict = new Dictionary<string, uint>();
-            nameDict.Add("", 0);
-
+            long position = this.BaseStream.Position;
+            DataWriter dataWriter = new DataWriter(this.BaseStream, Endianess.LittleEndian);
+            List<IRageArchiveEntry7> list = new List<IRageArchiveEntry7>();
+            Stack<RageArchiveDirectory7> stack = new Stack<RageArchiveDirectory7>();
+            int num = 1;
+            list.Add(this.Root);
+            stack.Push(this.Root);
+            Dictionary<string, uint> dictionary = new Dictionary<string, uint>();
+            dictionary.Add("", 0);
             while (stack.Count > 0)
             {
-                var directory = stack.Pop();
-
-                directory.EntriesIndex = (uint)entries.Count;
-                directory.EntriesCount = (uint)directory.Directories.Count + (uint)directory.Files.Count;
-
-                var theList = new List<IRageArchiveEntry7>();
-
-                foreach (var xd in directory.Directories)
+                RageArchiveDirectory7 rageArchiveDirectory = stack.Pop();
+                rageArchiveDirectory.EntriesIndex = (uint)list.Count;
+                rageArchiveDirectory.EntriesCount = (uint)(rageArchiveDirectory.Directories.Count + rageArchiveDirectory.Files.Count);
+                List<IRageArchiveEntry7> list2 = new List<IRageArchiveEntry7>();
+                foreach (RageArchiveDirectory7 rageArchiveDirectory2 in rageArchiveDirectory.Directories)
                 {
-                    if (!nameDict.ContainsKey(xd.Name))
+                    if (!dictionary.ContainsKey(rageArchiveDirectory2.Name))
                     {
-                        nameDict.Add(xd.Name, (uint)nameOffset);
-                        nameOffset += xd.Name.Length + 1;
+                        dictionary.Add(rageArchiveDirectory2.Name, (uint)num);
+                        num += rageArchiveDirectory2.Name.Length + 1;
                     }
-                    xd.NameOffset = nameDict[xd.Name];
-
-                    //xd.NameOffset = (ushort)nameOffset;
-                    //nameOffset += xd.Name.Length + 1;
-                    //entries.Add(xd);
-                    //stack.Push(xd);
-                    theList.Add(xd);
+                    rageArchiveDirectory2.NameOffset = dictionary[rageArchiveDirectory2.Name];
+                    list2.Add(rageArchiveDirectory2);
                 }
-
-                foreach (var xf in directory.Files)
+                foreach (IRageArchiveEntry7 rageArchiveEntry in rageArchiveDirectory.Files)
                 {
-                    if (!nameDict.ContainsKey(xf.Name))
+                    if (!dictionary.ContainsKey(rageArchiveEntry.Name))
                     {
-                        nameDict.Add(xf.Name, (uint)nameOffset);
-                        nameOffset += xf.Name.Length + 1;
+                        dictionary.Add(rageArchiveEntry.Name, (uint)num);
+                        num += rageArchiveEntry.Name.Length + 1;
                     }
-                    xf.NameOffset = nameDict[xf.Name];
-
-                    //xf.NameOffset = (ushort)nameOffset;
-                    //nameOffset += xf.Name.Length + 1;
-                    //entries.Add(xf);
-                    theList.Add(xf);
+                    rageArchiveEntry.NameOffset = dictionary[rageArchiveEntry.Name];
+                    list2.Add(rageArchiveEntry);
                 }
-
-                theList.Sort(
-                    delegate (IRageArchiveEntry7 a, IRageArchiveEntry7 b)
+                list2.Sort((IRageArchiveEntry7 a, IRageArchiveEntry7 b) => string.CompareOrdinal(a.Name, b.Name));
+                foreach (IRageArchiveEntry7 item in list2)
+                {
+                    list.Add(item);
+                }
+                list2.Reverse();
+                foreach (IRageArchiveEntry7 rageArchiveEntry2 in list2)
+                {
+                    if (rageArchiveEntry2 is RageArchiveDirectory7)
                     {
-                        return string.CompareOrdinal(a.Name, b.Name);
+                        stack.Push((RageArchiveDirectory7)rageArchiveEntry2);
                     }
-                    );
-                foreach (var xx in theList)
-                    entries.Add(xx);
-                theList.Reverse();
-                foreach (var xx in theList)
-                    if (xx is RageArchiveDirectory7)
-                        stack.Push((RageArchiveDirectory7)xx);
+                }
             }
-
-
-            // there are sometimes resources with length>=0xffffff which actually
-            // means length=0xffffff
-            // -> we therefore just cut the file size
-            foreach (var entry in entries)
-                if (entry is RageArchiveResourceFile7)
-                {
-                    var resource = entry as RageArchiveResourceFile7;
-                    if (resource.FileSize > 0xFFFFFF)
-                    {
-                        var buf = new byte[16];
-                        buf[7] = (byte)((resource.FileSize >> 0) & 0xFF);
-                        buf[14] = (byte)((resource.FileSize >> 8) & 0xFF);
-                        buf[5] = (byte)((resource.FileSize >> 16) & 0xFF);
-                        buf[2] = (byte)((resource.FileSize >> 24) & 0xFF);
-
-                        if (writer.Length > 512 * resource.FileOffset)
-                        {
-                            writer.Position = 512 * resource.FileOffset;
-                            writer.Write(buf);
-                        }                     
-
-                        resource.FileSize = 0xFFFFFF;
-                    }                        
-                }
-
-
-            // entries...
-            var ent_str = new MemoryStream();
-            var ent_wr = new DataWriter(ent_str);
-            foreach (var entry in entries)
-                entry.Write(ent_wr);
-            ent_str.Flush();
-
-            var ent_buf = new byte[ent_str.Length];
-            ent_str.Position = 0;
-            ent_str.Read(ent_buf, 0, ent_buf.Length);
-
-            if (Encryption == RageArchiveEncryption7.AES)
-                ent_buf = AesEncryption.EncryptData(ent_buf, aesKey);
-            if (Encryption == RageArchiveEncryption7.NG)
+            foreach (IRageArchiveEntry7 rageArchiveEntry3 in list)
             {
-                Encryption = RageArchiveEncryption7.None;
+                if (rageArchiveEntry3 is RageArchiveResourceFile7)
+                {
+                    RageArchiveResourceFile7 rageArchiveResourceFile = rageArchiveEntry3 as RageArchiveResourceFile7;
+                    if (rageArchiveResourceFile.FileSize > 0x00FFFFFF)
+                    {
+                        byte[] array = new byte[16];
+                        array[7] = (byte)(rageArchiveResourceFile.FileSize & 255);
+                        array[14] = (byte)(rageArchiveResourceFile.FileSize >> 8 & 255);
+                        array[5] = (byte)(rageArchiveResourceFile.FileSize >> 16 & 255);
+                        array[2] = (byte)(rageArchiveResourceFile.FileSize >> 24 & 255);
+                        if (dataWriter.Length > (512 * rageArchiveResourceFile.FileOffset))
+                        {
+                            dataWriter.Position = (512 * rageArchiveResourceFile.FileOffset);
+                            dataWriter.Write(array);
+                        }
+                        rageArchiveResourceFile.FileSize = 0x00FFFFFF;
+                    }
+                }
             }
-
-
-            // names...
-            var n_str = new MemoryStream();
-            var n_wr = new DataWriter(n_str);
-            //foreach (var entry in entries)
-            //    n_wr.Write(entry.Name);
-            foreach (var entry in nameDict)
-                n_wr.Write(entry.Key);
-            var empty = new byte[16 - (n_wr.Length % 16)];
-            n_wr.Write(empty);
-            n_str.Flush();
-
-            var n_buf = new byte[n_str.Length];
-            n_str.Position = 0;
-            n_str.Read(n_buf, 0, n_buf.Length);
-
-            if (Encryption == RageArchiveEncryption7.AES)
-                n_buf = AesEncryption.EncryptData(n_buf, aesKey);
-            
-            writer.Position = 0;
-            writer.Write((uint)IDENT);
-            writer.Write((uint)entries.Count);
-            writer.Write((uint)n_buf.Length);
-
-            switch (Encryption)
+            MemoryStream memoryStream = new MemoryStream();
+            DataWriter writer = new DataWriter(memoryStream, Endianess.LittleEndian);
+            foreach (IRageArchiveEntry7 rageArchiveEntry4 in list)
+            {
+                rageArchiveEntry4.Write(writer);
+            }
+            memoryStream.Flush();
+            byte[] array2 = new byte[memoryStream.Length];
+            memoryStream.Position = 0L;
+            memoryStream.Read(array2, 0, array2.Length);
+            if (this.Encryption == RageArchiveEncryption7.AES)
+            {
+                array2 = AesEncryption.EncryptData(array2, aesKey, 1);
+            }
+            if (this.Encryption == RageArchiveEncryption7.NG)
+            {
+                array2 = GTA5Crypto.Encrypt(array2, ngKey);
+            }
+            MemoryStream memoryStream2 = new MemoryStream();
+            DataWriter dataWriter2 = new DataWriter(memoryStream2, Endianess.LittleEndian);
+            foreach (KeyValuePair<string, uint> keyValuePair in dictionary)
+            {
+                dataWriter2.Write(keyValuePair.Key);
+            }
+            byte[] value = new byte[16L - dataWriter2.Length % 16L];
+            dataWriter2.Write(value);
+            memoryStream2.Flush();
+            byte[] array3 = new byte[memoryStream2.Length];
+            memoryStream2.Position = 0L;
+            memoryStream2.Read(array3, 0, array3.Length);
+            if (this.Encryption == RageArchiveEncryption7.AES)
+            {
+                array3 = AesEncryption.EncryptData(array3, aesKey, 1);
+            }
+            if (this.Encryption == RageArchiveEncryption7.NG)
+            {
+                array3 = GTA5Crypto.Encrypt(array3, ngKey);
+            }
+            dataWriter.Position = 0L;
+            dataWriter.Write(0x52504637);
+            dataWriter.Write((uint)list.Count);
+            dataWriter.Write((uint)array3.Length);
+            switch (this.Encryption)
             {
                 case RageArchiveEncryption7.None:
-                    writer.Write((uint)0x04E45504F);
+                    dataWriter.Write(0x4E45504F);
                     break;
                 case RageArchiveEncryption7.AES:
-                    writer.Write((uint)0x0ffffff9);
+                    dataWriter.Write(0x0FFFFFF9);
                     break;
                 case RageArchiveEncryption7.NG:
-                    writer.Write((uint)0x0fefffff);
+                    dataWriter.Write(0x0FEFFFFF);
                     break;
             }
-
-            writer.Write(ent_buf);
-            writer.Write(n_buf);
-
-
-
-            // restore position
-            BaseStream.Position = positionBackup;
+            dataWriter.Write(array2);
+            dataWriter.Write(array3);
+            this.BaseStream.Position = position;
         }
 
         /// <summary>

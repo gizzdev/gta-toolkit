@@ -30,56 +30,53 @@ namespace RageLib.Helpers
 {
     public static class HashSearch
     {
-        private const int BLOCK_LENGTH = 1048576;
 
-        public static byte[] SearchHash(Stream stream, byte[] hash, int alignment = 1, int length = 32)
+        private const int BLOCK_LENGTH = 1048576;
+        private const int ALIGN_LENGTH = 1;
+
+        public static byte[] SearchHash(Stream stream, byte[] hash, int length = 32)
         {
-            return SearchHashes(stream, new List<byte[]> { hash }, alignment, length)[0];
+            return HashSearch.SearchHashes(stream, new List<byte[]>
+            {
+                hash
+            }, length)[0];
         }
 
-        public static byte[][] SearchHashes(Stream stream, IList<byte[]> hashes, int alignment = 1, int length = 32)
+        public static byte[][] SearchHashes(Stream stream, IList<byte[]> hashes, int length = 32)
         {
-            var buf = new byte[stream.Length];
-            stream.Position = 0;
-            stream.Read(buf, 0, buf.Length);
-
-            var result = new byte[hashes.Count][];           
-
-            Parallel.For(0, (int)(stream.Length / BLOCK_LENGTH), (int k) => {
-
-                var tmp = new byte[length];
-
-                var hashProvider = new SHA1CryptoServiceProvider();
-                //var buffer = new byte[length];
-                for (int i = 0; i < (BLOCK_LENGTH / alignment); i++)
+            byte[][] result = new byte[hashes.Count][];
+            Parallel.For(0, (int)(stream.Length / 1048576L), delegate (int k)
+            {
+                SHA1CryptoServiceProvider sha1CryptoServiceProvider = new SHA1CryptoServiceProvider();
+                byte[] array = new byte[length];
+                for (int i = 0; i < 1048576; i++)
                 {
-                    var position = k * BLOCK_LENGTH + i * alignment;
-                    if (position >= stream.Length)
-                        continue;
-
-
-
-                    //lock (stream)
-                    //{
-                    //    stream.Position = position;
-                    //    stream.Read(buffer, 0, length);
-                    //}
-                    for (int t = 0; t < length; t++)
+                    int num = k * 1048576 + i;
+                    if ((long)num < stream.Length)
                     {
-                        tmp[t] = buf[position + t];
+                        Stream stream2 = stream;
+                        lock (stream2)
+                        {
+                            stream.Position = (long)num;
+                            stream.Read(array, 0, length);
+                        }
+                        if (result.Count((byte[] a) => a == null) == 0)
+                        {
+                            break;
+                        }
+                        byte[] first = sha1CryptoServiceProvider.ComputeHash(array);
+                        for (int j = 0; j < hashes.Count; j++)
+                        {
+                            if (first.SequenceEqual(hashes[j]))
+                            {
+                                result[j] = (byte[])array.Clone();
+                            }
+                        }
                     }
-
-
-                    var hash = hashProvider.ComputeHash(tmp);
-                    for (int j = 0; j < hashes.Count; j++)
-                        if (hash.SequenceEqual(hashes[j]))
-                            result[j] = (byte[])tmp.Clone();
                 }
-                
-
             });
-
             return result;
         }
+
     }
 }

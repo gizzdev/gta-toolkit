@@ -22,9 +22,11 @@
 
 using RageLib.GTA5.Cryptography.Exceptions;
 using RageLib.GTA5.Cryptography.Helpers;
+using RageLib.GTA5.Helpers;
 using RageLib.Helpers;
 using System;
 using System.IO;
+using System.Reflection;
 
 namespace RageLib.GTA5.Cryptography
 {
@@ -432,62 +434,90 @@ namespace RageLib.GTA5.Cryptography
         // ng decryption tables...       
         public static uint[][][] PC_NG_DECRYPT_TABLES;
 
+        // ng encryption tables...       
+        public static uint[][][] PC_NG_ENCRYPT_TABLES;
+
         // hash lookup-table...
         public static byte[] PC_LUT;
 
-
+        public static GTA5NGLUT[][] PC_NG_ENCRYPT_LUTs;
 
         public static void Generate(byte[] exeData)
         {
-            var exeStr = new MemoryStream(exeData);
+            string directoryName = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
+            MemoryStream stream = new MemoryStream(exeData);
 
-            PC_AES_KEY = HashSearch.SearchHash(exeStr, GTA5HashConstants.PC_AES_KEY_HASH, length: 0x20);
-            if (PC_AES_KEY == null)
-            {
-                throw new KeyNotFoundException("AES key not found.");
-            }
+            PC_AES_KEY = HashSearch.SearchHash(stream, GTA5HashConstants.PC_AES_KEY_HASH, 32);
             Console.WriteLine("aes key found");
+            File.WriteAllBytes(directoryName + "\\gtav_aes_key.dat", PC_AES_KEY);
 
-            PC_NG_KEYS = HashSearch.SearchHashes(exeStr, GTA5HashConstants.PC_NG_KEY_HASHES, length: 0x110);
-            for (int i = 0; i < PC_NG_KEYS.Length; i++)
-            {
-                if (PC_NG_KEYS[i] == null)
-                {
-                    throw new KeyNotFoundException("NG key not found.");
-                }
-            }
+            PC_NG_KEYS = HashSearch.SearchHashes(stream, GTA5HashConstants.PC_NG_KEY_HASHES, 0x110);
             Console.WriteLine("ng keys found");
+            CryptoIO.WriteNgKeys(directoryName + "\\gtav_ng_key.dat", PC_NG_KEYS);
 
-            var tabs = HashSearch.SearchHashes(exeStr, GTA5HashConstants.PC_NG_DECRYPT_TABLE_HASHES, length: 0x400);
-            for (int i = 0; i < tabs.Length; i++)
-            {
-                if (tabs[i] == null)
-                {
-                    throw new KeyNotFoundException("NG decryption table not found.");
-                }
-            }
+            byte[][] array = HashSearch.SearchHashes(stream, GTA5HashConstants.PC_NG_DECRYPT_TABLE_HASHES, 1024);
             Console.WriteLine("ng decrypt tables found");
 
-            // 17 rounds
             PC_NG_DECRYPT_TABLES = new uint[17][][];
+
             for (int i = 0; i < 17; i++)
             {
-                // 
                 PC_NG_DECRYPT_TABLES[i] = new uint[16][];
                 for (int j = 0; j < 16; j++)
                 {
-                    var buf = tabs[j + 16 * i];
+                    byte[] src = array[j + 16 * i];
                     PC_NG_DECRYPT_TABLES[i][j] = new uint[256];
-                    Buffer.BlockCopy(buf, 0, PC_NG_DECRYPT_TABLES[i][j], 0, 1024);
+                    Buffer.BlockCopy(src, 0, PC_NG_DECRYPT_TABLES[i][j], 0, 1024);
+                }
+            }
+            CryptoIO.WriteNgTables(directoryName + "\\gtav_ng_decrypt_tables.dat", PC_NG_DECRYPT_TABLES);
+
+            PC_LUT = HashSearch.SearchHash(stream, GTA5HashConstants.PC_LUT_HASH, 256);
+            Console.WriteLine("ng hash LUTs found");
+            File.WriteAllBytes(directoryName + "\\gtav_hash_lut.dat", PC_LUT);
+
+            PC_NG_ENCRYPT_TABLES = new uint[17][][];
+
+            for (int k = 0; k < 17; k++)
+            {
+                PC_NG_ENCRYPT_TABLES[k] = new uint[16][];
+                for (int l = 0; l < 16; l++)
+                {
+                    PC_NG_ENCRYPT_TABLES[k][l] = new uint[256];
+                    for (int m = 0; m < 256; m++)
+                    {
+                        PC_NG_ENCRYPT_TABLES[k][l][m] = 0;
+                    }
                 }
             }
 
-            PC_LUT = HashSearch.SearchHash(exeStr, GTA5HashConstants.PC_LUT_HASH, length: 0x100);
-            if (PC_LUT == null)
+            PC_NG_ENCRYPT_LUTs = new GTA5NGLUT[17][];
+
+            for (int n = 0; n < 17; n++)
             {
-                throw new KeyNotFoundException("LUT not found.");
+                PC_NG_ENCRYPT_LUTs[n] = new GTA5NGLUT[16];
+                for (int num = 0; num < 16; num++)
+                {
+                    PC_NG_ENCRYPT_LUTs[n][num] = new GTA5NGLUT();
+                }
             }
-            Console.WriteLine("ng hash LUTs found");
+
+
+            PC_NG_ENCRYPT_TABLES[0] = RandomGauss.Solve(PC_NG_DECRYPT_TABLES[0]);
+            Console.WriteLine("ng encrypt table 1 of 17 calculated");
+            PC_NG_ENCRYPT_TABLES[1] = RandomGauss.Solve(PC_NG_DECRYPT_TABLES[1]);
+            Console.WriteLine("ng encrypt table 2 of 17 calculated");
+            PC_NG_ENCRYPT_TABLES[16] = RandomGauss.Solve(PC_NG_DECRYPT_TABLES[16]);
+            Console.WriteLine("ng encrypt table 17 of 17 calculated");
+            CryptoIO.WriteNgTables(directoryName + "\\gtav_ng_encrypt_tables.dat", PC_NG_ENCRYPT_TABLES);
+
+            for (int num2 = 2; num2 <= 15; num2++)
+            {
+                PC_NG_ENCRYPT_LUTs[num2] = LookUpTableGenerator.BuildLUTs2(PC_NG_DECRYPT_TABLES[num2]);
+                Console.WriteLine("ng encrypt table " + (num2 + 1).ToString() + " of 17 calculated");
+            }
+
+            CryptoIO.WriteLuts(directoryName + "\\gtav_ng_encrypt_luts.dat", PC_NG_ENCRYPT_LUTs);
         }
 
         public static void LoadFromPath(string path)
@@ -495,15 +525,19 @@ namespace RageLib.GTA5.Cryptography
             PC_AES_KEY = File.ReadAllBytes(path + "\\gtav_aes_key.dat");
             PC_NG_KEYS = CryptoIO.ReadNgKeys(path + "\\gtav_ng_key.dat");
             PC_NG_DECRYPT_TABLES = CryptoIO.ReadNgTables(path + "\\gtav_ng_decrypt_tables.dat");
+            PC_NG_ENCRYPT_TABLES = CryptoIO.ReadNgTables(path + "\\gtav_ng_encrypt_tables.dat");
+            PC_NG_ENCRYPT_LUTs = CryptoIO.ReadNgLuts(path + "\\gtav_ng_encrypt_luts.dat");
             PC_LUT = File.ReadAllBytes(path + "\\gtav_hash_lut.dat");
         }
 
         public static void SaveToPath(string path)
         {
-            File.WriteAllBytes(path + "\\gtav_aes_key.dat", PC_AES_KEY);
-            CryptoIO.WriteNgKeys(path + "\\gtav_ng_key.dat", PC_NG_KEYS);
-            CryptoIO.WriteNgTables(path + "\\gtav_ng_decrypt_tables.dat", PC_NG_DECRYPT_TABLES);
-            File.WriteAllBytes(path + "\\gtav_hash_lut.dat", PC_LUT);
+            File.WriteAllBytes(path + "\\gtav_aes_key.dat", GTA5Constants.PC_AES_KEY);
+            CryptoIO.WriteNgKeys(path + "\\gtav_ng_key.dat", GTA5Constants.PC_NG_KEYS);
+            CryptoIO.WriteNgTables(path + "\\gtav_ng_decrypt_tables.dat", GTA5Constants.PC_NG_DECRYPT_TABLES);
+            CryptoIO.WriteNgTables(path + "\\gtav_ng_encrypt_tables.dat", GTA5Constants.PC_NG_ENCRYPT_TABLES);
+            CryptoIO.WriteLuts(path + "\\gtav_ng_encrypt_luts.dat", GTA5Constants.PC_NG_ENCRYPT_LUTs);
+            File.WriteAllBytes(path + "\\gtav_hash_lut.dat", GTA5Constants.PC_LUT);
         }
 
     }

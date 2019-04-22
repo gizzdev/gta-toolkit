@@ -155,6 +155,73 @@ namespace RageLib.GTA5.Cryptography.Helpers
 
             fs.Close();
         }
-        
+
+        public static GTA5NGLUT[][] ReadNgLuts(byte[] data)
+        {
+            var ms = new MemoryStream(data);
+            var rd = new DataReader(ms);
+
+            GTA5NGLUT[][] array = new GTA5NGLUT[17][];
+            for (int i = 0; i < 17; i++)
+            {
+                array[i] = new GTA5NGLUT[16];
+                for (int j = 0; j < 16; j++)
+                {
+                    array[i][j] = new GTA5NGLUT();
+                    array[i][j].LUT0 = new byte[256][];
+                    for (int k = 0; k < 256; k++)
+                    {
+                        array[i][j].LUT0[k] = rd.ReadBytes(256);
+                    }
+                    array[i][j].LUT1 = new byte[256][];
+                    for (int l = 0; l < 256; l++)
+                    {
+                        array[i][j].LUT1[l] = rd.ReadBytes(256);
+                    }
+                    array[i][j].Indices = rd.ReadBytes(65536);
+                }
+            }
+            ms.Close();
+            return array;
+        }
+
+
+        public static GTA5NGLUT[][] ReadNgLuts(string fileName)
+        {
+            return ReadNgLuts(File.ReadAllBytes(fileName));
+        }
+
+        public static void WriteLuts(string fileName, GTA5NGLUT[][] lutData)
+        {
+            FileStream fileStream = new FileStream(fileName, FileMode.Create);
+            DataWriter dataWriter = new DataWriter(fileStream, Endianess.LittleEndian);
+            for (int i = 0; i < 17; i++)
+            {
+                for (int j = 0; j < 16; j++)
+                {
+                    GTA5NGLUT gta5NGLUT = lutData[i][j];
+                    for (int k = 0; k < 256; k++)
+                    {
+                        for (int l = 0; l < 256; l++)
+                        {
+                            dataWriter.Write(gta5NGLUT.LUT0[k][l]);
+                        }
+                    }
+                    for (int m = 0; m < 256; m++)
+                    {
+                        for (int n = 0; n < 256; n++)
+                        {
+                            dataWriter.Write(gta5NGLUT.LUT1[m][n]);
+                        }
+                    }
+                    for (int num = 0; num < 65536; num++)
+                    {
+                        dataWriter.Write(gta5NGLUT.Indices[num]);
+                    }
+                }
+            }
+            fileStream.Close();
+        }
+
     }
 }

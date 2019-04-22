@@ -63,38 +63,33 @@ namespace RageLib.GTA5.ArchiveWrappers
         public void Flush()
         {
 
-
-
             long headerSize = GetHeaderSize();
-            do
+
+            for (;;)
             {
-                var blocks = GetBlocks();
-                long maxheaderlength = ArchiveHelpers.FindSpace(blocks, blocks[0]);
-                if (maxheaderlength < headerSize)
+                List<DataBlock> blocks = GetBlocks();
+
+                long num = ArchiveHelpers.FindSpace(blocks, blocks[0]);
+
+                if (num >= headerSize)
                 {
-                    long newpos = ArchiveHelpers.FindOffset(blocks, blocks[1].Length, 512);
-                    ArchiveHelpers.MoveBytes(archive_.BaseStream, blocks[1].Offset, newpos, blocks[1].Length);
-                    ((IRageArchiveFileEntry7)blocks[1].Tag).FileOffset = (uint)(newpos / 512);
-
-                    blocks = GetBlocks();
-                    maxheaderlength = ArchiveHelpers.FindSpace(blocks, blocks[0]);
-                }
-                else
                     break;
+                }
 
-            } while (true);
+                long num2 = ArchiveHelpers.FindOffset(blocks, blocks[1].Length, 512);
 
+                ArchiveHelpers.MoveBytes(archive_.BaseStream, blocks[1].Offset, num2, blocks[1].Length);
 
+                ((IRageArchiveFileEntry7)blocks[1].Tag).FileOffset = (uint)(num2 / 512);
+                blocks = this.GetBlocks();
+                num    = ArchiveHelpers.FindSpace(blocks, blocks[0]);
+            }
 
+            uint num3 = GTA5Hash.CalculateHash(FileName);
+            uint num4 = (num3 + (uint)archive_.BaseStream.Length + 0x3D) % 0x65;
 
-            // calculate key...
-            var tmp1 = GTA5Hash.CalculateHash(FileName);
-            var tmp2 = (tmp1 + (uint)archive_.BaseStream.Length + (101 - 40)) % 0x65;
-
-            //  archive_.key_ = GTA5Crypto.key_gta5;
-            archive_.WriteHeader(GTA5Constants.PC_AES_KEY, GTA5Constants.PC_NG_KEYS[tmp2]);
+            archive_.WriteHeader(GTA5Constants.PC_AES_KEY, GTA5Constants.PC_NG_KEYS[(int)num4]);
             archive_.BaseStream.Flush();
-
         }
 
         /// <summary>
