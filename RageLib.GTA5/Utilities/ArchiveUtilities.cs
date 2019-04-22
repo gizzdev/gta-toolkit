@@ -31,10 +31,11 @@ namespace RageLib.GTA5.Utilities
     public delegate void ProcessBinaryFileDelegate(string fullFileName, IArchiveBinaryFile binaryFile, RageArchiveEncryption7 encryption);
     public delegate void ProcessResourceFileDelegate(string fullFileName, IArchiveResourceFile resourceFile, RageArchiveEncryption7 encryption);
     public delegate void ProcessFileDelegate(string fullFileName, IArchiveFile file, RageArchiveEncryption7 encryption);
+    public delegate void ErrorDelegate(Exception e);
 
     public static class ArchiveUtilities
     {
-        public static void ForEachBinaryFile(string gameDirectoryName, ProcessBinaryFileDelegate processDelegate)
+        public static void ForEachBinaryFile(string gameDirectoryName, ProcessBinaryFileDelegate processDelegate, ErrorDelegate errorDelegate = null)
         {
             ForEachFile(gameDirectoryName, (fullFileName, file, encryption) =>
             {
@@ -42,10 +43,10 @@ namespace RageLib.GTA5.Utilities
                 {
                     processDelegate(fullFileName, (IArchiveBinaryFile)file, encryption);
                 }
-            });
+            }, errorDelegate);
         }
 
-        public static void ForEachResourceFile(string gameDirectoryName, ProcessResourceFileDelegate processDelegate)
+        public static void ForEachResourceFile(string gameDirectoryName, ProcessResourceFileDelegate processDelegate, ErrorDelegate errorDelegate = null)
         {
             ForEachFile(gameDirectoryName, (fullFileName, file, encryption) =>
             {
@@ -53,10 +54,10 @@ namespace RageLib.GTA5.Utilities
                 {
                     processDelegate(fullFileName, (IArchiveResourceFile)file, encryption);
                 }
-            });
+            }, errorDelegate);
         }
 
-        public static void ForEachFile(string gameDirectoryName, ProcessFileDelegate processDelegate)
+        public static void ForEachFile(string gameDirectoryName, ProcessFileDelegate processDelegate, ErrorDelegate errorDelegate = null)
         {
             var archiveFileNames = Directory.GetFiles(gameDirectoryName, "*.rpf", SearchOption.AllDirectories);
             for (int i = 0; i < archiveFileNames.Length; i++)
@@ -73,12 +74,12 @@ namespace RageLib.GTA5.Utilities
                 }
                 catch (Exception e)
                 {
-
+                    errorDelegate?.Invoke(e);
                 }
             }
         }
 
-        public static void ForEachFile(string fullPathName, IArchiveDirectory directory, RageArchiveEncryption7 encryption, ProcessFileDelegate processDelegate)
+        public static void ForEachFile(string fullPathName, IArchiveDirectory directory, RageArchiveEncryption7 encryption, ProcessFileDelegate processDelegate, ErrorDelegate errorDelegate = null)
         {
             foreach (var file in directory.GetFiles())
             {
@@ -89,11 +90,11 @@ namespace RageLib.GTA5.Utilities
                     {
                         var fileStream = ((IArchiveBinaryFile)file).GetStream();
                         var inputArchive = RageArchiveWrapper7.Open(fileStream, file.Name);
-                        ForEachFile(fullPathName + "\\" + file.Name, inputArchive.Root, inputArchive.archive_.Encryption, processDelegate);
+                        ForEachFile(fullPathName + "\\" + file.Name, inputArchive.Root, inputArchive.archive_.Encryption, processDelegate, errorDelegate);
 
                     } catch(Exception e)
                     {
-
+                        errorDelegate?.Invoke(e);
                     }
                 }
             }
