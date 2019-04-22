@@ -20,10 +20,6 @@
     THE SOFTWARE.
 */
 
-using RageLib.Resources.Common;
-using RageLib.Resources.GTA5.PC.Meta;
-using System.Collections.Generic;
-
 namespace RageLib.GTA5.Tests.ResourceWrappers.PC.Meta
 {
 
