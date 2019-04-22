@@ -67,13 +67,13 @@ namespace RageLib.GTA5.ResourceWrappers.PC.Meta.Structures
 			this.LodLevel = CMloInstanceDef.lodLevel;
 			this.NumChildren = CMloInstanceDef.numChildren;
 			this.PriorityLevel = CMloInstanceDef.priorityLevel;
-			// this.Extensions = CMloInstanceDef.extensions;
+			this.Extensions = new Array_StructurePointer();
 			this.AmbientOcclusionMultiplier = CMloInstanceDef.ambientOcclusionMultiplier;
 			this.ArtificialAmbientOcclusion = CMloInstanceDef.artificialAmbientOcclusion;
 			this.TintValue = CMloInstanceDef.tintValue;
 			this.GroupId = CMloInstanceDef.groupId;
 			this.FloorId = CMloInstanceDef.floorId;
-			// this.DefaultEntitySets = CMloInstanceDef.defaultEntitySets;
+			this.DefaultEntitySets = CMloInstanceDef.defaultEntitySets;
 			this.NumExitPortals = CMloInstanceDef.numExitPortals;
 			this.MLOInstflags = CMloInstanceDef.MLOInstflags;
 		}
@@ -93,13 +93,13 @@ namespace RageLib.GTA5.ResourceWrappers.PC.Meta.Structures
 			this.MetaStructure.lodLevel = this.LodLevel;
 			this.MetaStructure.numChildren = this.NumChildren;
 			this.MetaStructure.priorityLevel = this.PriorityLevel;
-			// this.MetaStructure.extensions = this.Extensions;
+			this.MetaStructure.extensions = this.Extensions;
 			this.MetaStructure.ambientOcclusionMultiplier = this.AmbientOcclusionMultiplier;
 			this.MetaStructure.artificialAmbientOcclusion = this.ArtificialAmbientOcclusion;
 			this.MetaStructure.tintValue = this.TintValue;
 			this.MetaStructure.groupId = this.GroupId;
 			this.MetaStructure.floorId = this.FloorId;
-			// this.MetaStructure.defaultEntitySets = this.DefaultEntitySets;
+			this.MetaStructure.defaultEntitySets = this.DefaultEntitySets;
 			this.MetaStructure.numExitPortals = this.NumExitPortals;
 			this.MetaStructure.MLOInstflags = this.MLOInstflags;
 

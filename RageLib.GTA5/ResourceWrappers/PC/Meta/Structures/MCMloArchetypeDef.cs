@@ -64,11 +64,11 @@ namespace RageLib.GTA5.ResourceWrappers.PC.Meta.Structures
         public List<MCExtensionDefWindDisturbance> ExtensionDefWindDisturbances = new List<MCExtensionDefWindDisturbance>();
 
         public uint MloFlags;
-        public List<MCEntityDef> Entities;
-        public List<MCMloRoomDef> Rooms;
-        public List<MCMloPortalDef> Portals;
-        public List<MCMloEntitySet> EntitySets;
-        public List<MCMloTimeCycleModifier> TimeCycleModifiers;
+        public List<MCEntityDef> Entities = new List<MCEntityDef>();
+        public List<MCMloRoomDef> Rooms = new List<MCMloRoomDef>();
+        public List<MCMloPortalDef> Portals = new List<MCMloPortalDef>();
+        public List<MCMloEntitySet> EntitySets = new List<MCMloEntitySet>();
+        public List<MCMloTimeCycleModifier> TimeCycleModifiers = new List<MCMloTimeCycleModifier>();
 
         public MCMloArchetypeDef()
         {
@@ -229,11 +229,7 @@ namespace RageLib.GTA5.ResourceWrappers.PC.Meta.Structures
 
             this.MloFlags = CMloArchetypeDef.mloFlags;
 
-            this.Entities = MetaUtils.ConvertDataArray<CEntityDef>(this.Meta, CMloArchetypeDef.entities).Select(e => {
-                var obj = new MCEntityDef();
-                obj.Parse(meta, e);
-                return obj;
-            }).ToList();
+            this.Entities = MetaUtils.ConvertDataArray<CEntityDef>(this.Meta, CMloArchetypeDef.entities)?.Select(e => { var obj = new MCEntityDef(); obj.Parse(meta, e); return obj; }).ToList() ?? new List<MCEntityDef>();
 
             var rooms = MetaUtils.ConvertDataArray<CMloRoomDef>(meta, CMloArchetypeDef.rooms);
             this.Rooms = rooms?.Select(e => { var msw = new MCMloRoomDef(this); msw.Parse(meta, e); return msw; }).ToList();

@@ -344,7 +344,7 @@ namespace RageLib.GTA5.ResourceWrappers.PC.Meta
                     {
                         byte val = Convert.ToByte(split[j], 16);
                         data[offset] = val;
-                        offset++;
+                        offset += sizeof(byte);
                     }
                     break;
                 case StructureEntryDataType.SignedByte: //expecting space-separated array.
@@ -354,7 +354,7 @@ namespace RageLib.GTA5.ResourceWrappers.PC.Meta
                         if (sbyte.TryParse(split[j].Trim(), ns, ic, out val))
                         {
                             data[offset] = (byte)val;
-                            offset++;
+                            offset += sizeof(sbyte);
                         }
                     }
                     break;
@@ -365,7 +365,7 @@ namespace RageLib.GTA5.ResourceWrappers.PC.Meta
                         if (byte.TryParse(split[j].Trim(), ns, ic, out val))
                         {
                             data[offset] = val;
-                            offset++;
+                            offset += sizeof(byte);
                         }
                     }
                     break;
@@ -375,9 +375,8 @@ namespace RageLib.GTA5.ResourceWrappers.PC.Meta
                         short val;// = Convert.ToInt16(split[j], 10);
                         if (short.TryParse(split[j].Trim(), ns, ic, out val))
                         {
-                            byte[] bytes = BitConverter.GetBytes(val);
-                            Write(bytes[bytes.Length - 1], data, offset);
-                            offset++;
+                            Write(val, data, offset);
+                            offset += sizeof(short);
                         }
                     }
                     break;
@@ -387,9 +386,8 @@ namespace RageLib.GTA5.ResourceWrappers.PC.Meta
                         ushort val;// = Convert.ToUInt16(split[j], 10);
                         if (ushort.TryParse(split[j].Trim(), ns, ic, out val))
                         {
-                            byte[] bytes = BitConverter.GetBytes(val);
-                            Write(bytes[bytes.Length - 1], data, offset);
-                            offset++;
+                            Write(val, data, offset);
+                            offset += sizeof(ushort);
                         }
                     }
                     break;
@@ -399,9 +397,8 @@ namespace RageLib.GTA5.ResourceWrappers.PC.Meta
                         int val;// = Convert.ToInt32(split[j], 10);
                         if (int.TryParse(split[j].Trim(), ns, ic, out val))
                         {
-                            byte[] bytes = BitConverter.GetBytes(val);
-                            Write(bytes[bytes.Length - 1], data, offset);
-                            offset++;
+                            Write(val, data, offset);
+                            offset += sizeof(int);
                         }
                     }
                     break;
@@ -411,9 +408,8 @@ namespace RageLib.GTA5.ResourceWrappers.PC.Meta
                         uint val;// = Convert.ToUInt32(split[j], 10);
                         if (uint.TryParse(split[j].Trim(), ns, ic, out val))
                         {
-                            byte[] bytes = BitConverter.GetBytes(val);
-                            Write(bytes[bytes.Length - 1], data, offset);
-                            offset++;
+                            Write(val, data, offset);
+                            offset += sizeof(uint);
                         }
                     }
                     break;
@@ -421,11 +417,10 @@ namespace RageLib.GTA5.ResourceWrappers.PC.Meta
                     for (int j = 0; j < split.Length; j++)
                     {
                         float val;// = FloatUtil.Parse(split[j]);
-                        if (float.TryParse(split[j].Trim(), NumberStyles.AllowLeadingSign | NumberStyles.AllowDecimalPoint | NumberStyles.AllowExponent, CultureInfo.InvariantCulture, out val))
+                        if (FloatUtil.TryParse(split[j].Trim(), out val))
                         {
-                            byte[] bytes = BitConverter.GetBytes(val);
-                            Write(bytes[bytes.Length - 1], data, offset);
-                            offset++;
+                            Write(val, data, offset);
+                            offset += sizeof(float);
                         }
                     }
                     break;
@@ -622,42 +617,63 @@ namespace RageLib.GTA5.ResourceWrappers.PC.Meta
         {
             var items = new List<Vector4>();
 
-
-            var split = node.InnerText.Split('\n');// Regex.Split(node.InnerText, @"[\s\r\n\t]");
-
-
             float x = 0f;
             float y = 0f;
             float z = 0f;
             float w = 0f;
 
-            for (int i = 0; i < split.Length; i++)
+            var cnodes = node.SelectNodes("Item");
+            if (cnodes.Count > 0)
             {
-                var s = split[i]?.Trim();
-                if (string.IsNullOrEmpty(s)) continue;
-                var split2 = Regex.Split(s, @"[\s\t]");
-                int c = 0;
-                x = 0f; y = 0f; z = 0f;
-                for (int n = 0; n < split2.Length; n++)
+                foreach (XmlNode cnode in cnodes)
                 {
-                    var ts = split2[n]?.Trim();
-                    if (string.IsNullOrEmpty(ts)) continue;
-                    var f = FloatUtil.Parse(ts);
-                    switch (c)
+                    var str = cnode.InnerText;
+                    var strs = str.Split(',');
+                    if (strs.Length >= 3)
                     {
-                        case 0: x = f; break;
-                        case 1: y = f; break;
-                        case 2: z = f; break;
+                        x = FloatUtil.Parse(strs[0].Trim());
+                        y = FloatUtil.Parse(strs[1].Trim());
+                        z = FloatUtil.Parse(strs[2].Trim());
+                        if (strs.Length >= 4)
+                        {
+                            w = FloatUtil.Parse(strs[3].Trim());
+                        }
+                        var val = new Vector4(x, y, z, w);
+                        items.Add(val);
                     }
-                    c++;
-                }
-                if (c >= 3)
-                {
-                    var val = new Vector4(x, y, z, w);
-                    items.Add(val);
                 }
             }
+            else
+            {
+                var split = node.InnerText.Split('\n');// Regex.Split(node.InnerText, @"[\s\r\n\t]");
 
+                for (int i = 0; i < split.Length; i++)
+                {
+                    var s = split[i]?.Trim();
+                    if (string.IsNullOrEmpty(s)) continue;
+                    var split2 = Regex.Split(s, @"[\s\t]");
+                    int c = 0;
+                    x = 0f; y = 0f; z = 0f;
+                    for (int n = 0; n < split2.Length; n++)
+                    {
+                        var ts = split2[n]?.Trim();
+                        if (string.IsNullOrEmpty(ts)) continue;
+                        var f = FloatUtil.Parse(ts);
+                        switch (c)
+                        {
+                            case 0: x = f; break;
+                            case 1: y = f; break;
+                            case 2: z = f; break;
+                        }
+                        c++;
+                    }
+                    if (c >= 3)
+                    {
+                        var val = new Vector4(x, y, z, w);
+                        items.Add(val);
+                    }
+                }
+            }
 
             return mb.AddPaddedVector3ArrayPtr(items.ToArray());
         }

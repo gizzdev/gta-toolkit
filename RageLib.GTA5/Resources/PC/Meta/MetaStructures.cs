@@ -2910,6 +2910,7 @@ namespace RageLib.Resources.GTA5.PC.Meta
         public uint Unused0; // 0
         public uint Unused1; // 4
         public uint name; // 8  Key: 0
+        public uint Unused2; // 12
         public Array_uint locations; // 16  Key: 0
         public Array_StructurePointer entities; // 32  Key: 0
     }
@@ -3007,6 +3008,8 @@ namespace RageLib.Resources.GTA5.PC.Meta
         public float OrientToTerrain; // 64  Key: 0
         public uint Unused1; // 68
         public Array_Structure InstanceList; // 72  Key: rage__fwGrassInstanceListDef__InstanceData
+        public uint Unused2; // 88
+        public uint Unused3; // 92
     }
 
 

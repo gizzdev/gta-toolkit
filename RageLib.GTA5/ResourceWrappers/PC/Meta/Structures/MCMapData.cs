@@ -91,8 +91,8 @@ namespace RageLib.GTA5.ResourceWrappers.PC.Meta.Structures
 			this.EntitiesExtentsMin = CMapData.entitiesExtentsMin;
 			this.EntitiesExtentsMax = CMapData.entitiesExtentsMax;
 
-            this.Entities = MetaUtils.GetTypedDataArray<CEntityDef>(this.Meta, MetaName.CEntityDef)?.Select(e => { var obj = new MCEntityDef(); obj.Parse(meta, e); return obj; }).ToList();
-            this.MloInstances = MetaUtils.GetTypedDataArray<CMloInstanceDef>(this.Meta, MetaName.CMloInstanceDef)?.Select(e => { var obj = new MCMloInstanceDef(); obj.Parse(meta, e); return obj; }).ToList();
+            this.Entities = MetaUtils.GetTypedDataArray<CEntityDef>(this.Meta, MetaName.CEntityDef)?.Select(e => { var obj = new MCEntityDef(); obj.Parse(meta, e); return obj; }).ToList() ?? new List<MCEntityDef>();
+            this.MloInstances = MetaUtils.GetTypedDataArray<CMloInstanceDef>(this.Meta, MetaName.CMloInstanceDef)?.Select(e => { var obj = new MCMloInstanceDef(); obj.Parse(meta, e); return obj; }).ToList() ?? new List<MCMloInstanceDef>();
 
             this.ContainerLods = new Array_Structure();
             var boxOccluders = MetaUtils.ConvertDataArray<Unk_975711773>(meta, CMapData.boxOccluders);

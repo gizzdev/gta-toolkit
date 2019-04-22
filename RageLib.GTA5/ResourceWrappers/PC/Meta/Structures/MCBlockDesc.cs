@@ -41,10 +41,10 @@ namespace RageLib.GTA5.ResourceWrappers.PC.Meta.Structures
 
 			this.Version = CBlockDesc.version;
 			this.Flags = CBlockDesc.flags;
-			this.Name = MetaUtils.GetString(Meta, CBlockDesc.name);
-			this.ExportedBy = MetaUtils.GetString(Meta, CBlockDesc.exportedBy);
-			this.Owner = MetaUtils.GetString(Meta, CBlockDesc.owner);
-			this.Time = MetaUtils.GetString(Meta, CBlockDesc.time);
+			this.Name = MetaUtils.GetString(Meta, CBlockDesc.name) ?? "GTAUtil";
+			this.ExportedBy = MetaUtils.GetString(Meta, CBlockDesc.exportedBy) ?? "GTAUtil";
+            this.Owner = MetaUtils.GetString(Meta, CBlockDesc.owner) ?? "GTAUtil";
+			this.Time = MetaUtils.GetString(Meta, CBlockDesc.time) ?? DateTime.UtcNow.ToString("dd MMMM yyyy HH:mm");
 		}
 
 		public override void Build(MetaBuilder mb, bool isRoot = false)

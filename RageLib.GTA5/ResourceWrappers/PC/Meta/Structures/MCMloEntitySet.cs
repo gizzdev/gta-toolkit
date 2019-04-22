@@ -10,8 +10,8 @@ namespace RageLib.GTA5.ResourceWrappers.PC.Meta.Structures
 		public static MetaName _MetaName = MetaName.CMloEntitySet;
 		public MetaFile Meta;
 		public uint Name;
-		public Array_uint Locations;
-		public Array_StructurePointer Entities;
+		public List<uint> Locations = new List<uint>();
+        public List<MCEntityDef> Entities;
 
 		public MCMloEntitySet()
 		{
@@ -36,17 +36,20 @@ namespace RageLib.GTA5.ResourceWrappers.PC.Meta.Structures
 			this.MetaStructure = CMloEntitySet;
 
 			this.Name = CMloEntitySet.name;
-			// this.Locations = CMloEntitySet.locations;
-			// this.Entities = CMloEntitySet.entities;
-		}
+            this.Locations = MetaUtils.ConvertDataArray<uint>(meta, CMloEntitySet.locations.Pointer, CMloEntitySet.locations.Count1)?.ToList();
+            this.Entities = MetaUtils.ConvertDataArray<CEntityDef>(this.Meta, CMloEntitySet.entities)?.Select(e => { var obj = new MCEntityDef(); obj.Parse(meta, e); return obj; }).ToList() ?? new List<MCEntityDef>();
+        }
 
 		public override void Build(MetaBuilder mb, bool isRoot = false)
 		{
 			this.MetaStructure.name = this.Name;
-			// this.MetaStructure.locations = this.Locations;
-			// this.MetaStructure.entities = this.Entities;
+			this.MetaStructure.locations = mb.AddUintArrayPtr(this.Locations.ToArray());
 
- 			MCMloEntitySet.AddEnumAndStructureInfo(mb);          
+            var entPtrs = new List<MetaPOINTER>();
+            this.AddMetaPointers(mb, entPtrs, MetaName.CEntityDef, this.Entities.Select(e => { e.Build(mb); return e.MetaStructure; }));
+            this.MetaStructure.entities = mb.AddPointerArray(entPtrs.ToArray());
+
+            MCMloEntitySet.AddEnumAndStructureInfo(mb);          
 
 			if(isRoot)
 			{
@@ -55,5 +58,24 @@ namespace RageLib.GTA5.ResourceWrappers.PC.Meta.Structures
 				this.Meta = mb.GetMeta();
 			}
 		}
-	}
+
+        public int AddEntity(MCEntityDef entity, int room)
+        {
+            this.Entities.Add(entity);
+            return this.Entities.IndexOf(entity);
+        }
+
+        public void RemoveEntity(MCEntityDef entity)
+        {
+            int idx = this.Entities.IndexOf(entity);
+
+            if (idx == -1)
+                return;
+
+            this.Entities.RemoveAt(idx);
+            this.Locations.RemoveAt(idx);
+
+        }
+
+    }
 }
