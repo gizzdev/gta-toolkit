@@ -65,10 +65,7 @@ namespace RageLib.GTA5.Utilities
                 try
                 {
                     var fileName = archiveFileNames[i];
-                    var fileInfo = new FileInfo(fileName);
-                    var fileStream = new FileStream(fileName, FileMode.Open);
-
-                    var inputArchive = RageArchiveWrapper7.Open(fileStream, fileInfo.Name);
+                    var inputArchive = RageArchiveWrapper7.Open(fileName);
                     ForEachFile(fileName.Replace(gameDirectoryName, ""), inputArchive.Root, inputArchive.archive_.Encryption, processDelegate);
                     inputArchive.Dispose();
                 }
