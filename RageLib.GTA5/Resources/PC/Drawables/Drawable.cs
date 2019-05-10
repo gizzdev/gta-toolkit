@@ -52,7 +52,8 @@ namespace RageLib.Resources.GTA5.PC.Drawables
         public uint Unknown_88h;
         public uint Unknown_8Ch;
         public ulong JointsPointer;
-        public uint Unknown_98h;
+        public ushort Unknown_98h;
+        public ushort Unknown_9Ah;
         public uint Unknown_9Ch; // 0x00000000
         public ulong DrawableModelsXPointer;
 
@@ -74,6 +75,7 @@ namespace RageLib.Resources.GTA5.PC.Drawables
             base.Read(reader, parameters);
 
             // read structure data
+
             this.ShaderGroupPointer = reader.ReadUInt64();
             this.SkeletonPointer = reader.ReadUInt64();
             this.BoundingCenter = reader.ReadBlock<RAGE_Vector3>();
@@ -93,7 +95,8 @@ namespace RageLib.Resources.GTA5.PC.Drawables
             this.Unknown_88h = reader.ReadUInt32();
             this.Unknown_8Ch = reader.ReadUInt32();
             this.JointsPointer = reader.ReadUInt64();
-            this.Unknown_98h = reader.ReadUInt32();
+            this.Unknown_98h = reader.ReadUInt16();
+            this.Unknown_9Ah = reader.ReadUInt16();
             this.Unknown_9Ch = reader.ReadUInt32();
             this.DrawableModelsXPointer = reader.ReadUInt64();
 
@@ -104,6 +107,10 @@ namespace RageLib.Resources.GTA5.PC.Drawables
 
             this.Skeleton = reader.ReadBlockAt<SkeletonData>(
                 this.SkeletonPointer // offset
+            );
+
+            this.DrawableModelsHigh = reader.ReadBlockAt<ResourcePointerList64<DrawableModel>>(
+                this.DrawableModelsHighPointer // offset
             );
 
             this.DrawableModelsMedium = reader.ReadBlockAt<ResourcePointerList64<DrawableModel>>(
@@ -164,6 +171,7 @@ namespace RageLib.Resources.GTA5.PC.Drawables
             writer.Write(this.Unknown_8Ch);
             writer.Write(this.JointsPointer);
             writer.Write(this.Unknown_98h);
+            writer.Write(this.Unknown_9Ah);
             writer.Write(this.Unknown_9Ch);
             writer.Write(this.DrawableModelsXPointer);
         }
@@ -182,6 +190,7 @@ namespace RageLib.Resources.GTA5.PC.Drawables
             if (DrawableModelsVeryLow != null) list.Add(DrawableModelsVeryLow);
             if (Joints != null) list.Add(Joints);
             if (DrawableModelsX != null) list.Add(DrawableModelsX);
+
             return list.ToArray();
         }
     }

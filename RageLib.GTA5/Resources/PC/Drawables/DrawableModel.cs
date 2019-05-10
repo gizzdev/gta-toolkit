@@ -32,7 +32,7 @@ namespace RageLib.Resources.GTA5.PC.Drawables
         public override long Length => 0x30;
 
         // structure data
-        public uint VFT;
+        public uint VFT { get; set; }
         public uint Unknown_4h; // 0x00000001
         public ulong GeometriesPointer;
         public ushort GeometriesCount1;
@@ -40,14 +40,9 @@ namespace RageLib.Resources.GTA5.PC.Drawables
         public uint Unknown_14h; // 0x00000000
         public ulong BoundsPointer;
         public ulong ShaderMappingPointer;
-        public byte BoneCount;
-        public byte IsSkinned1;
-        public byte Unknown_2Ah;
-        public byte BoneIndex;
-        public byte Mask;
-        public byte IsSkinned2;
-        public byte Unknown_2Eh;
-        public byte Unknown_2Fh;
+        public uint SkeletonBinding;//4th byte is bone index, 2nd byte for skin meshes
+        public ushort RenderMaskFlags; //First byte is called "Mask" in GIMS EVO
+        public ushort GeometriesCount3; //always equal to GeometriesCount, is it ShaderMappingCount?
 
         // reference data
         public ResourcePointerArray64<DrawableGeometry> Geometries;
@@ -68,14 +63,9 @@ namespace RageLib.Resources.GTA5.PC.Drawables
             this.Unknown_14h = reader.ReadUInt32();
             this.BoundsPointer = reader.ReadUInt64();
             this.ShaderMappingPointer = reader.ReadUInt64();
-            this.BoneCount = reader.ReadByte();
-            this.IsSkinned1 = reader.ReadByte();
-            this.Unknown_2Ah = reader.ReadByte();
-            this.BoneIndex = reader.ReadByte();
-            this.Mask = reader.ReadByte();
-            this.IsSkinned2 = reader.ReadByte();
-            this.Unknown_2Eh = reader.ReadByte();
-            this.Unknown_2Fh = reader.ReadByte();
+            this.SkeletonBinding = reader.ReadUInt32();
+            this.RenderMaskFlags = reader.ReadUInt16();
+            this.GeometriesCount3 = reader.ReadUInt16();
 
             // read reference data
             this.Geometries = reader.ReadBlockAt<ResourcePointerArray64<DrawableGeometry>>(
@@ -99,7 +89,9 @@ namespace RageLib.Resources.GTA5.PC.Drawables
         {
             // update structure data
             this.GeometriesPointer = (ulong)(this.Geometries != null ? this.Geometries.Position : 0);
-            //	this.GeometriesCount1 = (ushort)(this.Geometries != null ? this.Geometries.Count : 0);
+            this.GeometriesCount1 = (ushort)(this.Geometries != null ? this.Geometries.Count : 0);
+            this.GeometriesCount2 = this.GeometriesCount1;//is this correct?
+            this.GeometriesCount3 = this.GeometriesCount1;//is this correct?
             this.BoundsPointer = (ulong)(this.BoundsData != null ? this.BoundsData.Position : 0);
             this.ShaderMappingPointer = (ulong)(this.ShaderMapping != null ? this.ShaderMapping.Position : 0);
 
@@ -112,14 +104,9 @@ namespace RageLib.Resources.GTA5.PC.Drawables
             writer.Write(this.Unknown_14h);
             writer.Write(this.BoundsPointer);
             writer.Write(this.ShaderMappingPointer);
-            writer.Write(this.BoneCount);
-            writer.Write(this.IsSkinned1);
-            writer.Write(this.Unknown_2Ah);
-            writer.Write(this.BoneIndex);
-            writer.Write(this.Mask);
-            writer.Write(this.IsSkinned2);
-            writer.Write(this.Unknown_2Eh);
-            writer.Write(this.Unknown_2Fh);
+            writer.Write(this.SkeletonBinding);
+            writer.Write(this.RenderMaskFlags);
+            writer.Write(this.GeometriesCount3);
         }
 
         /// <summary>
@@ -131,7 +118,10 @@ namespace RageLib.Resources.GTA5.PC.Drawables
             if (Geometries != null) list.Add(Geometries);
             if (BoundsData != null) list.Add(BoundsData);
             if (ShaderMapping != null) list.Add(ShaderMapping);
+
             return list.ToArray();
+
+
         }
     }
 }

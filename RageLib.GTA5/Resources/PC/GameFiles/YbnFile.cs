@@ -22,6 +22,7 @@
 
 using System;
 using System.Collections.Generic;
+using RageLib.GTA5.Resources.PC;
 using RageLib.Resources.GTA5.PC.Meta;
 using SharpDX;
 
@@ -38,12 +39,13 @@ namespace RageLib.Resources.GTA5.PC.GameFiles
 
         public override void Parse()
         {
-            this.Bound = this.ResourceFile.ResourceData;
+            Bound = ResourceFile.ResourceData;
         }
 
         public override void Build()
         {
-
+            ResourceFile.Version = ResourceFileTypes_GTA5_pc.Bound.Version;
+            ResourceFile.ResourceData = Bound;
         }
 
     }

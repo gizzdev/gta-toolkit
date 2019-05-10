@@ -65,7 +65,7 @@ namespace RageLib.Resources.GTA5.PC.Drawables
 
             // read reference data
             this.Name = reader.ReadBlockAt<string_r>(
-                this.NamePointer // offset
+                this.NamePointer // offset,
             );
             this.LightAttributes = reader.ReadBlockAt<ResourceSimpleArray<LightAttributes>>(
                 this.LightAttributesPointer, // offset

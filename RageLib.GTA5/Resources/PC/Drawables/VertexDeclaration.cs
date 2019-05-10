@@ -1,37 +1,20 @@
-/*
-    Copyright(c) 2016 Neodymium
-
-    Permission is hereby granted, free of charge, to any person obtaining a copy
-    of this software and associated documentation files (the "Software"), to deal
-    in the Software without restriction, including without limitation the rights
-    to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-    copies of the Software, and to permit persons to whom the Software is
-    furnished to do so, subject to the following conditions:
-
-    The above copyright notice and this permission notice shall be included in
-    all copies or substantial portions of the Software.
-
-    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-    AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-    OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-    THE SOFTWARE.
-*/
+﻿using RageLib.Resources;
 
 namespace RageLib.Resources.GTA5.PC.Drawables
 {
     public class VertexDeclaration : ResourceSystemBlock
     {
-        public override long Length => 0x10;
+        public override long Length
+        {
+            get { return 16; }
+        }
 
         // structure data
-        public uint Flags;
-        public ushort Stride;
-        public byte Unknown_6h;
-        public byte Count;
-        public ulong Types;
+        public uint Flags { get; set; }
+        public ushort Stride { get; set; }
+        public byte Unknown_6h { get; set; }
+        public byte Count { get; set; }
+        public ulong Types { get; set; }
 
         /// <summary>
         /// Reads the data-block from a stream.
@@ -57,6 +40,24 @@ namespace RageLib.Resources.GTA5.PC.Drawables
             writer.Write(this.Unknown_6h);
             writer.Write(this.Count);
             writer.Write(this.Types);
+        }
+
+        public ulong GetDeclarationId()
+        {
+            ulong res = 0;
+            for (int i = 0; i < 16; i++)
+            {
+                if (((Flags >> i) & 1) == 1)
+                {
+                    res += (Types & (0xFu << (i * 4)));
+                }
+            }
+            return res;
+        }
+
+        public override string ToString()
+        {
+            return Stride.ToString() + ": " + Count.ToString() + ": " + Flags.ToString() + ": " + Types.ToString();
         }
     }
 }

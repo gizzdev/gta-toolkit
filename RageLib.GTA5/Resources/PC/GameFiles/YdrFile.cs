@@ -22,14 +22,15 @@
 
 using System;
 using System.Collections.Generic;
+using RageLib.GTA5.Resources.PC;
 using RageLib.Resources.GTA5.PC.Meta;
 using SharpDX;
 
 namespace RageLib.Resources.GTA5.PC.GameFiles
 {
-    public class YdrFile : GameFileBase_Resource<Drawables.Drawable>
+    public class YdrFile : GameFileBase_Resource<Drawables.GtaDrawable>
     {
-        public Drawables.Drawable Drawable;
+        public Drawables.GtaDrawable Drawable;
 
         public YdrFile()
         {
@@ -38,12 +39,13 @@ namespace RageLib.Resources.GTA5.PC.GameFiles
 
         public override void Parse()
         {
-            this.Drawable = this.ResourceFile.ResourceData;
+            Drawable = ResourceFile.ResourceData;
         }
 
         public override void Build()
         {
-
+            ResourceFile.Version = ResourceFileTypes_GTA5_pc.Drawable.Version;
+            ResourceFile.ResourceData = Drawable;
         }
 
     }

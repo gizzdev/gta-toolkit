@@ -60,7 +60,7 @@ namespace RageLib.Resources.GTA5.PC.Drawables
         public uint Unknown_64h; // 0x00000000
         public ulong BoneIdsPointer;
         public ushort VertexStride;
-        public ushort Count1;
+        public ushort BoneIdsCount;
         public uint Unknown_74h; // 0x00000000
         public ulong VertexDataPointer;
         public uint Unknown_80h; // 0x00000000
@@ -109,7 +109,7 @@ namespace RageLib.Resources.GTA5.PC.Drawables
             this.Unknown_64h = reader.ReadUInt32();
             this.BoneIdsPointer = reader.ReadUInt64();
             this.VertexStride = reader.ReadUInt16();
-            this.Count1 = reader.ReadUInt16();
+            this.BoneIdsCount = reader.ReadUInt16();
             this.Unknown_74h = reader.ReadUInt32();
             this.VertexDataPointer = reader.ReadUInt64();
             this.Unknown_80h = reader.ReadUInt32();
@@ -128,7 +128,7 @@ namespace RageLib.Resources.GTA5.PC.Drawables
             );
             this.BoneIds = reader.ReadBlockAt<ResourceSimpleArray<ushort_r>>(
                 this.BoneIdsPointer, // offset
-                this.Count1
+                this.BoneIdsCount
             );
             this.VertexData = reader.ReadBlockAt<VertexData_GTA5_pc>(
                 this.VertexDataPointer, // offset
@@ -146,11 +146,9 @@ namespace RageLib.Resources.GTA5.PC.Drawables
             // update structure data
             this.VertexBufferPointer = (ulong)(this.VertexBuffer != null ? this.VertexBuffer.Position : 0);
             this.IndexBufferPointer = (ulong)(this.IndexBuffer != null ? this.IndexBuffer.Position : 0);
-            //this.IndicesCount = (uint)(this.IndexBuffer?.Indices?.Count ?? 0);
-            //this.VerticesCount = (ushort)(this.VertexBuffer?.VertexCount ?? 0); // assume vertex buffer is aleady updated
             this.BoneIdsPointer = (ulong)(this.BoneIds != null ? this.BoneIds.Position : 0);
-            //this.Count1 = (ushort)(this.Unknown_68h_Data?.Length ?? 0);
-            //this.VertexStride = (ushort)(this.VertexData != null ? this.VertexData.Count : 0);
+            this.VerticesCount = (ushort)(this.VertexData != null ? this.VertexData.VertexCount : 0); //TODO: fix?
+            this.BoneIdsCount = (ushort)(this.BoneIds != null ? this.BoneIds.Count : 0);
             this.VertexDataPointer = (ulong)(this.VertexData != null ? this.VertexData.Position : 0);
 
             // write structure data
@@ -181,7 +179,7 @@ namespace RageLib.Resources.GTA5.PC.Drawables
             writer.Write(this.Unknown_64h);
             writer.Write(this.BoneIdsPointer);
             writer.Write(this.VertexStride);
-            writer.Write(this.Count1);
+            writer.Write(this.BoneIdsCount);
             writer.Write(this.Unknown_74h);
             writer.Write(this.VertexDataPointer);
             writer.Write(this.Unknown_80h);
