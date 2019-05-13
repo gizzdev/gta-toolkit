@@ -164,6 +164,9 @@ namespace RageLib.Resources.GTA5.PC.Drawables
                 this.VertexCount,
                 this.Info
             );
+
+            if (this.Data1 == null && this.Data2 != null)
+                this.Data1 = this.Data2;
         }
 
         /// <summary>
