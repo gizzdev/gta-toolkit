@@ -173,8 +173,6 @@ namespace RageLib.GTA5.ResourceWrappers.PC
 
         public static string FormatHash(MetaName h) //for use with WriteItemArray
         {
-            var str = h.ToString();
-            if (!string.IsNullOrEmpty(str)) return str;
             return HashString(h);// "hash_" + h.Hex;
         }
         public static string FormatVector2(Vector2 v) //for use with WriteItemArray

@@ -37,12 +37,12 @@ namespace RageLib.Resources.GTA5.PC.GameFiles
             
         }
 
-        public override void Parse()
+        public override void Parse(object[] parameters = null)
         {
             Drawable = ResourceFile.ResourceData;
         }
 
-        public override void Build()
+        public override void Build(object[] parameters = null)
         {
             ResourceFile.Version = ResourceFileTypes_GTA5_pc.Drawable.Version;
             ResourceFile.ResourceData = Drawable;

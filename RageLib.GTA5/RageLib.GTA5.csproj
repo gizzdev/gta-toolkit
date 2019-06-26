@@ -31,14 +31,23 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="HtmlAgilityPack, Version=1.8.5.0, Culture=neutral, PublicKeyToken=bd319b19eaf3b43a, processorArchitecture=MSIL">
-      <HintPath>..\packages\HtmlAgilityPack.1.8.5\lib\Net45\HtmlAgilityPack.dll</HintPath>
+    <Reference Include="HtmlAgilityPack, Version=1.11.4.0, Culture=neutral, PublicKeyToken=bd319b19eaf3b43a, processorArchitecture=MSIL">
+      <HintPath>..\packages\HtmlAgilityPack.1.11.4\lib\Net45\HtmlAgilityPack.dll</HintPath>
     </Reference>
-    <Reference Include="SharpDX, Version=4.1.0.0, Culture=neutral, PublicKeyToken=b4dcf0f35e5521f1, processorArchitecture=MSIL">
-      <HintPath>..\packages\SharpDX.4.1.0\lib\net45\SharpDX.dll</HintPath>
+    <Reference Include="SharpDX, Version=4.2.0.0, Culture=neutral, PublicKeyToken=b4dcf0f35e5521f1, processorArchitecture=MSIL">
+      <HintPath>..\packages\SharpDX.4.2.0\lib\net45\SharpDX.dll</HintPath>
     </Reference>
-    <Reference Include="SharpDX.Mathematics, Version=4.1.0.0, Culture=neutral, PublicKeyToken=b4dcf0f35e5521f1, processorArchitecture=MSIL">
-      <HintPath>..\packages\SharpDX.Mathematics.4.1.0\lib\net45\SharpDX.Mathematics.dll</HintPath>
+    <Reference Include="SharpDX.D3DCompiler, Version=4.2.0.0, Culture=neutral, PublicKeyToken=b4dcf0f35e5521f1, processorArchitecture=MSIL">
+      <HintPath>..\packages\SharpDX.D3DCompiler.4.2.0\lib\net45\SharpDX.D3DCompiler.dll</HintPath>
+    </Reference>
+    <Reference Include="SharpDX.Direct3D11, Version=4.2.0.0, Culture=neutral, PublicKeyToken=b4dcf0f35e5521f1, processorArchitecture=MSIL">
+      <HintPath>..\packages\SharpDX.Direct3D11.4.2.0\lib\net45\SharpDX.Direct3D11.dll</HintPath>
+    </Reference>
+    <Reference Include="SharpDX.DXGI, Version=4.2.0.0, Culture=neutral, PublicKeyToken=b4dcf0f35e5521f1, processorArchitecture=MSIL">
+      <HintPath>..\packages\SharpDX.DXGI.4.2.0\lib\net45\SharpDX.DXGI.dll</HintPath>
+    </Reference>
+    <Reference Include="SharpDX.Mathematics, Version=4.2.0.0, Culture=neutral, PublicKeyToken=b4dcf0f35e5521f1, processorArchitecture=MSIL">
+      <HintPath>..\packages\SharpDX.Mathematics.4.2.0\lib\net45\SharpDX.Mathematics.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -208,6 +217,7 @@
     <Compile Include="Resources\PC\Drawables\Unknown_D_001.cs" />
     <Compile Include="Resources\PC\Drawables\VertexBuffer.cs" />
     <Compile Include="Resources\PC\Drawables\VertexDeclaration.cs" />
+    <Compile Include="Resources\PC\Drawables\VertexTypes.cs" />
     <Compile Include="Resources\PC\Expressions\Expression.cs" />
     <Compile Include="Resources\PC\Expressions\ExpressionDictionary.cs" />
     <Compile Include="Resources\PC\Expressions\Unknown_E_001.cs" />
@@ -231,10 +241,13 @@
     <Compile Include="Resources\PC\Fragments\Unknown_F_002.cs" />
     <Compile Include="Resources\PC\Fragments\Unknown_F_003.cs" />
     <Compile Include="Resources\PC\Fragments\Unknown_F_004.cs" />
+    <Compile Include="Resources\PC\GameFiles\FxcFile.cs" />
+    <Compile Include="Resources\PC\GameFiles\FxcParser.cs" />
     <Compile Include="Resources\PC\GameFiles\GameFileBase.cs" />
     <Compile Include="Resources\PC\GameFiles\Gxt2File.cs" />
     <Compile Include="Resources\PC\GameFiles\YbnFile.cs" />
     <Compile Include="Resources\PC\GameFiles\YddFile.cs" />
+    <Compile Include="Resources\PC\GameFiles\TxdFile.cs" />
     <Compile Include="Resources\PC\GameFiles\YdrFile.cs" />
     <Compile Include="Resources\PC\GameFiles\YmtPedDefinitionFile.cs" />
     <Compile Include="Resources\PC\GameFiles\YtypFile.cs" />
@@ -461,6 +474,7 @@
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>
+    <None Include="app.config" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>

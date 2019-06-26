@@ -52,8 +52,8 @@ namespace RageLib.GTA5.ResourceWrappers.PC.Meta.Structures
 			this.MetaStructure.version = this.Version;
 			this.MetaStructure.flags = this.Flags;
 			this.MetaStructure.name = mb.AddStringPtr(this.Name);
-			this.MetaStructure.exportedBy = mb.AddStringPtr(this.ExportedBy);
-			this.MetaStructure.owner = mb.AddStringPtr(this.Owner);
+			this.MetaStructure.exportedBy = mb.AddStringPtr("GTAUtil");
+            this.MetaStructure.owner = mb.AddStringPtr(this.Owner);
 			this.MetaStructure.time = mb.AddStringPtr(this.Time);
 
  			MCBlockDesc.AddEnumAndStructureInfo(mb);                    

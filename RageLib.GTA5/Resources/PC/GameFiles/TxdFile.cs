@@ -28,24 +28,24 @@ using SharpDX;
 
 namespace RageLib.Resources.GTA5.PC.GameFiles
 {
-    public class YbnFile : GameFileBase_Resource<Bounds.Bound>
+    public class TxdFile : GameFileBase_Resource<Textures.TextureDictionary>
     {
-        public Bounds.Bound Bound;
+        public Textures.TextureDictionary TextureDictionary;
 
-        public YbnFile()
+        public TxdFile()
         {
             
         }
 
         public override void Parse(object[] parameters = null)
         {
-            Bound = ResourceFile.ResourceData;
+            TextureDictionary = ResourceFile.ResourceData;
         }
 
         public override void Build(object[] parameters = null)
         {
-            ResourceFile.Version = ResourceFileTypes_GTA5_pc.Bound.Version;
-            ResourceFile.ResourceData = Bound;
+            ResourceFile.Version = ResourceFileTypes_GTA5_pc.TextureDictionary.Version;
+            ResourceFile.ResourceData = TextureDictionary;
         }
 
     }

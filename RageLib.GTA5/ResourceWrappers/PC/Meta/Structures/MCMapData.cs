@@ -53,11 +53,33 @@ namespace RageLib.GTA5.ResourceWrappers.PC.Meta.Structures
 		public MCDistantLODLight DistantLODLightsSOA;
 		public MCBlockDesc Block = new MCBlockDesc();
 
-		public MCMapData()
+        public MCMapData _ParentMapData;
+        public MCMapData ParentMapData
+        {
+            get
+            {
+                return this._ParentMapData;
+            }
+            set
+            {
+                this._ParentMapData = value;
+
+                for (int k = 0; k < this.Entities.Count; k++)
+                {
+                    var entity = this.Entities[k];
+                    entity.ParentIndex = entity.ParentIndex;
+                }
+            }
+        }
+
+		public MCMapData(MCMapData parentMapData = null)
 		{
 			this.MetaName = MetaName.CMapData;
 			this.MetaStructure = new CMapData();
-		}
+
+            this.ParentMapData = parentMapData;
+
+        }
 
         public static void AddEnumAndStructureInfo(MetaBuilder mb)
         {
@@ -91,7 +113,8 @@ namespace RageLib.GTA5.ResourceWrappers.PC.Meta.Structures
 			this.EntitiesExtentsMin = CMapData.entitiesExtentsMin;
 			this.EntitiesExtentsMax = CMapData.entitiesExtentsMax;
 
-            this.Entities = MetaUtils.GetTypedDataArray<CEntityDef>(this.Meta, MetaName.CEntityDef)?.Select(e => { var obj = new MCEntityDef(); obj.Parse(meta, e); return obj; }).ToList() ?? new List<MCEntityDef>();
+            this.Entities = MetaUtils.GetTypedDataArray<CEntityDef>(this.Meta, MetaName.CEntityDef)?.Select(e => { var obj = new MCEntityDef(this); obj.Parse(meta, e); return obj; }).ToList() ?? new List<MCEntityDef>();
+
             this.MloInstances = MetaUtils.GetTypedDataArray<CMloInstanceDef>(this.Meta, MetaName.CMloInstanceDef)?.Select(e => { var obj = new MCMloInstanceDef(); obj.Parse(meta, e); return obj; }).ToList() ?? new List<MCMloInstanceDef>();
 
             this.ContainerLods = new Array_Structure();
@@ -122,7 +145,30 @@ namespace RageLib.GTA5.ResourceWrappers.PC.Meta.Structures
 
         }
 
-		public override void Build(MetaBuilder mb, bool isRoot = false)
+        public void ParseFast(MetaFile meta, CMapData CMapData)
+        {
+            this.Meta = meta;
+            this.MetaStructure = CMapData;
+
+            this.Name = (MetaName)CMapData.name;
+            this.Parent = (MetaName)CMapData.parent;
+            this.Flags = CMapData.flags;
+            this.ContentFlags = CMapData.contentFlags;
+            this.StreamingExtentsMin = CMapData.streamingExtentsMin;
+            this.StreamingExtentsMax = CMapData.streamingExtentsMax;
+            this.EntitiesExtentsMin = CMapData.entitiesExtentsMin;
+            this.EntitiesExtentsMax = CMapData.entitiesExtentsMax;
+
+            this.Entities = MetaUtils.GetTypedDataArray<CEntityDef>(this.Meta, MetaName.CEntityDef)?.Select(e => { var obj = new MCEntityDef(this); obj.ParseWithoutExtensions(meta, e); return obj; }).ToList() ?? new List<MCEntityDef>();
+
+            this.MloInstances = MetaUtils.GetTypedDataArray<CMloInstanceDef>(this.Meta, MetaName.CMloInstanceDef)?.Select(e => { var obj = new MCMloInstanceDef(); obj.Parse(meta, e); return obj; }).ToList() ?? new List<MCMloInstanceDef>();
+
+            this.Block = new MCBlockDesc();
+            this.Block.Parse(meta, CMapData.block);
+
+        }
+
+        public override void Build(MetaBuilder mb, bool isRoot = false)
 		{
 			this.MetaStructure.name = (uint) this.Name;
 			this.MetaStructure.parent = (uint) this.Parent;
@@ -194,5 +240,48 @@ namespace RageLib.GTA5.ResourceWrappers.PC.Meta.Structures
 				this.Meta = mb.GetMeta();
 			}
 		}
+
+        public int AddEntity(MCEntityDef entity)
+        {
+            entity.Parent = this;
+            this.Entities.Add(entity);
+            return this.Entities.Count - 1;
+        }
+
+        public int[] AddEntities(IEnumerable<MCEntityDef> entities)
+        {
+            var list = entities.ToList();
+            var indexes = new List<int>();
+
+            for (int i = 0; i < list.Count; i++)
+                indexes.Add(this.AddEntity(list[i]));
+
+            return indexes.ToArray();
+        }
+
+        public void RemoveEntity(MCEntityDef entity)
+        {
+            entity.Parent = null;
+            this.Entities.Remove(entity);
+        }
+
+        public void RemoveEntities(IEnumerable<MCEntityDef> entities)
+        {
+            var list = entities.ToList();
+
+            for (int i = 0; i < list.Count; i++)
+                this.RemoveEntity(list[i]);
+        }
+
+        public static List<Unk_1264241711> LodLevels = new List<Unk_1264241711>
+        {
+            Unk_1264241711.LODTYPES_DEPTH_SLOD4,
+            Unk_1264241711.LODTYPES_DEPTH_SLOD3,
+            Unk_1264241711.LODTYPES_DEPTH_SLOD2,
+            Unk_1264241711.LODTYPES_DEPTH_SLOD1,
+            Unk_1264241711.LODTYPES_DEPTH_LOD,
+            Unk_1264241711.LODTYPES_DEPTH_HD,
+            Unk_1264241711.LODTYPES_DEPTH_ORPHANHD
+        };
     }
 }

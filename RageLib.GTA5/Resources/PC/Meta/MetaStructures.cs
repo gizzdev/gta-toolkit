@@ -2978,6 +2978,9 @@ namespace RageLib.Resources.GTA5.PC.Meta
         public int bodyColorRemap4; // 64  Key: 0
         public uint popGroup; // 68  Key: 0
         public sbyte livery; // 72  Key: 0
+        public byte Unused5; //73
+        public ushort Unused6;//74
+        public uint Unused7; // 76
     }
 
 
