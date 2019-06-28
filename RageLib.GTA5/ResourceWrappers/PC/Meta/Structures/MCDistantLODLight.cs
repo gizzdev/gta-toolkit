@@ -9,12 +9,14 @@ namespace RageLib.GTA5.ResourceWrappers.PC.Meta.Structures
 	{
 		public static MetaName _MetaName = MetaName.CDistantLODLight;
 		public MetaFile Meta;
-		public List<MVECTOR3> Position;
-		public Array_uint RGBI;
-		public ushort NumStreetLights;
+		public List<MVECTOR3> Position { get { return this.Entries.Select(e => e.Position).ToList(); }}
+		public List<uint> RGBI { get { return this.Entries.Select(e => e.RGBI).ToList(); } }
+        public ushort NumStreetLights;
 		public ushort Category;
 
-		public MCDistantLODLight()
+        public List<DistantLODLightEntry> Entries = new List<DistantLODLightEntry>();
+
+        public MCDistantLODLight()
 		{
 			this.MetaName = MetaName.CDistantLODLight;
 			this.MetaStructure = new CDistantLODLight();
@@ -37,11 +39,23 @@ namespace RageLib.GTA5.ResourceWrappers.PC.Meta.Structures
 			this.Meta = meta;
 			this.MetaStructure = CDistantLODLight;
 
-			var position = MetaUtils.ConvertDataArray<VECTOR3>(meta, CDistantLODLight.position);
-			this.Position = position?.Select(e => { var msw = new MVECTOR3(); msw.Parse(meta, e); return msw; }).ToList();
+			var _position = MetaUtils.ConvertDataArray<VECTOR3>(meta, CDistantLODLight.position);
+            List<MVECTOR3> position = _position?.Select(e => { var msw = new MVECTOR3(); msw.Parse(meta, e); return msw; }).ToList();
 
-			// this.RGBI = CDistantLODLight.RGBI;
-			this.NumStreetLights = CDistantLODLight.numStreetLights;
+            uint[] rgbi = MetaUtils.ConvertDataArray<uint>(meta, CDistantLODLight.RGBI.Pointer, CDistantLODLight.RGBI.Count1).ToArray();
+
+            Entries.Clear();
+
+            for (int i = 0; i < position.Count; i++)
+            {
+                Entries.Add(new DistantLODLightEntry()
+                {
+                    Position = position[i],
+                    RGBI     = rgbi[i],
+                });
+            }
+
+            this.NumStreetLights = CDistantLODLight.numStreetLights;
 			this.Category = CDistantLODLight.category;
 		}
 
@@ -51,8 +65,8 @@ namespace RageLib.GTA5.ResourceWrappers.PC.Meta.Structures
 				this.MetaStructure.position = mb.AddItemArrayPtr(MetaName.VECTOR3, this.Position.Select(e => { e.Build(mb); return e.MetaStructure; }).ToArray());
  			MVECTOR3.AddEnumAndStructureInfo(mb);                    
 
-			// this.MetaStructure.RGBI = this.RGBI;
-			this.MetaStructure.numStreetLights = this.NumStreetLights;
+			this.MetaStructure.RGBI = mb.AddUintArrayPtr(this.RGBI.ToArray());
+            this.MetaStructure.numStreetLights = this.NumStreetLights;
 			this.MetaStructure.category = this.Category;
 
  			MCDistantLODLight.AddEnumAndStructureInfo(mb);          
@@ -65,4 +79,10 @@ namespace RageLib.GTA5.ResourceWrappers.PC.Meta.Structures
 			}
 		}
 	}
+
+    public struct DistantLODLightEntry
+    {
+        public MVECTOR3 Position;
+        public uint RGBI;
+    }
 }

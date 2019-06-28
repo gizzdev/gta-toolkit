@@ -55,5 +55,10 @@ namespace RageLib.GTA5.ResourceWrappers.PC.Meta.Structures
 				this.Meta = mb.GetMeta();
 			}
 		}
-	}
+
+        public static implicit operator Vector3(MVECTOR3 mvec)
+        {
+            return new Vector3(mvec.X, mvec.Y, mvec.Z);
+        }
+    }
 }
