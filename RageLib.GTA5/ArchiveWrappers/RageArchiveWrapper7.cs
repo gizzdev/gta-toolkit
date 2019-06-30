@@ -535,7 +535,12 @@ namespace RageLib.GTA5.ArchiveWrappers
         /// </summary>
         public void DeleteFile(IArchiveFile file)
         {
-            throw new NotImplementedException();
+            var found = this.directory.Files.Find(e => e.Name == file.Name);
+
+            if(found != null)
+            {
+                this.directory.Files.Remove(found);
+            }
         }
 
         public void Dispose()
