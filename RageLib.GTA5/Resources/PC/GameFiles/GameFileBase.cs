@@ -28,16 +28,16 @@ namespace RageLib.Resources.GTA5.PC.GameFiles
 {
     public interface IGameFile
     {
-        void Load(string fileName);
-        void Load(Stream stream);
-        void Load(byte[] data);
+        void Load(string fileName, object[] parameters = null);
+        void Load(Stream stream, object[] parameters = null);
+        void Load(byte[] data, object[] parameters = null);
 
-        void Save(string fileName);
-        void Save(Stream stream);
-        byte[] Save();
+        void Save(string fileName, object[] parameters = null);
+        void Save(Stream stream, object[] parameters = null);
+        byte[] Save(object[] parameters = null);
 
-        void Parse();
-        void Build();
+        void Parse(object[] parameters = null);
+        void Build(object[] parameters = null);
     }
 
     public abstract class GameFileBase : IGameFile
@@ -49,32 +49,32 @@ namespace RageLib.Resources.GTA5.PC.GameFiles
             this.Stream = null;
         }
 
-        public void Load(string fileName)
+        public void Load(string fileName, object[] parameters = null)
         {
             byte[] data = File.ReadAllBytes(fileName);
-            this.Load(data);
+            this.Load(data, parameters);
         }
 
-        public void Load(Stream stream)
+        public void Load(Stream stream, object[] parameters = null)
         {
             this.Stream = stream;
             this.Stream.Position = 0;
-            this.Parse();
+            this.Parse(parameters);
         }
 
-        public void Load(byte[] data)
+        public void Load(byte[] data, object[] parameters = null)
         {
             this.Stream = new MemoryStream();
 
             this.Stream.Write(data, 0, data.Length);
             this.Stream.Position = 0;
-            this.Parse();
+            this.Parse(parameters);
         }
 
-        public void Save(string fileName)
+        public void Save(string fileName, object[] parameters = null)
         {
             this.Stream.Position = 0;
-            this.Build();
+            this.Build(parameters);
 
             using (var fs = new FileStream(fileName, FileMode.OpenOrCreate, FileAccess.Write, FileShare.None))
             {
@@ -82,17 +82,17 @@ namespace RageLib.Resources.GTA5.PC.GameFiles
             }
         }
 
-        public void Save(Stream stream)
+        public void Save(Stream stream, object[] parameters = null)
         {
             this.Stream.Position = 0;
-            this.Build();
+            this.Build(parameters);
             this.Stream.CopyTo(stream);
         }
 
-        public byte[] Save()
+        public byte[] Save(object[] parameters = null)
         {
             this.Stream.Position = 0;
-            this.Build();
+            this.Build(parameters);
 
             using (var ms = new MemoryStream())
             {
@@ -101,8 +101,8 @@ namespace RageLib.Resources.GTA5.PC.GameFiles
             }
         }
 
-        public abstract void Parse();
-        public abstract void Build();
+        public abstract void Parse(object[] parameters = null);
+        public abstract void Build(object[] parameters = null);
     }
 
     public abstract class GameFileBase_Resource<T> : IGameFile where T : IResourceBlock, new()
@@ -114,43 +114,43 @@ namespace RageLib.Resources.GTA5.PC.GameFiles
             this.ResourceFile = new ResourceFile_GTA5_pc<T>();
         }
 
-        public void Load(string fileName)
+        public void Load(string fileName, object[] parameters = null)
         {
             this.ResourceFile.Load(fileName);
-            this.Parse();
+            this.Parse(parameters);
         }
 
-        public void Load(Stream stream)
+        public void Load(Stream stream, object[] parameters = null)
         {
             this.ResourceFile.Load(stream);
-            this.Parse();
+            this.Parse(parameters);
         }
 
-        public void Load(byte[] data)
+        public void Load(byte[] data, object[] parameters = null)
         {
             this.ResourceFile.Load(data);
-            this.Parse();
+            this.Parse(parameters);
         }
 
-        public void Save(string fileName)
+        public void Save(string fileName, object[] parameters = null)
         {
-            this.Build();
+            this.Build(parameters);
             this.ResourceFile.Save(fileName);
         }
 
-        public void Save(Stream stream)
+        public void Save(Stream stream, object[] parameters = null)
         {
-            this.Build();
+            this.Build(parameters);
             this.ResourceFile.Save(stream);
         }
 
-        public byte[] Save()
+        public byte[] Save(object[] parameters = null)
         {
-            this.Build();
+            this.Build(parameters);
             return this.ResourceFile.Save();
         }
 
-        public abstract void Parse();
-        public abstract void Build();
+        public abstract void Parse(object[] parameters = null);
+        public abstract void Build(object[] parameters = null);
     }
 }

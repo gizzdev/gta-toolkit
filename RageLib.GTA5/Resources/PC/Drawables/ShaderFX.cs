@@ -33,7 +33,7 @@ namespace RageLib.Resources.GTA5.PC.Drawables
 
         // structure data
         public ulong ParametersPointer;
-        public uint Unknown_8h;
+        public uint NameHash;
         public uint Unknown_Ch; // 0x00000000
         public byte ParameterCount;
         public byte Unknown_11h;
@@ -60,7 +60,7 @@ namespace RageLib.Resources.GTA5.PC.Drawables
         {
             // read structure data
             this.ParametersPointer = reader.ReadUInt64();
-            this.Unknown_8h = reader.ReadUInt32();
+            this.NameHash = reader.ReadUInt32();
             this.Unknown_Ch = reader.ReadUInt32();
             this.ParameterCount = reader.ReadByte();
             this.Unknown_11h = reader.ReadByte();
@@ -105,7 +105,7 @@ namespace RageLib.Resources.GTA5.PC.Drawables
 
             // write structure data
             writer.Write(this.ParametersPointer);
-            writer.Write(this.Unknown_8h);
+            writer.Write(this.NameHash);
             writer.Write(this.Unknown_Ch);
             writer.Write(this.ParameterCount);
             writer.Write(this.Unknown_11h);

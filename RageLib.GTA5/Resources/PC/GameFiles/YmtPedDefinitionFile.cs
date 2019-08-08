@@ -39,7 +39,7 @@ namespace RageLib.Resources.GTA5.PC.GameFiles
             this.Unk_376833625 = new RageLib.GTA5.ResourceWrappers.PC.Meta.Structures.MUnk_376833625();
         }
 
-        public override void Parse()
+        public override void Parse(object[] parameters = null)
         {
             var Unk_376833625Blocks = this.ResourceFile.ResourceData.FindBlocks((MetaName)376833625);
 
@@ -52,7 +52,7 @@ namespace RageLib.Resources.GTA5.PC.GameFiles
             this.Unk_376833625.Parse(this.ResourceFile.ResourceData, Unk_376833625);
         }
 
-        public override void Build()
+        public override void Build(object[] parameters = null)
         {
             var mb = new MetaBuilder();
 

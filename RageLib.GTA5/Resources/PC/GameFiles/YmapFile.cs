@@ -36,8 +36,13 @@ namespace RageLib.Resources.GTA5.PC.GameFiles
             this.CMapData = new MCMapData();
         }
 
-        public override void Parse()
+        public override void Parse(object[] parameters = null)
         {
+            bool parseFast = false;
+
+            if (parameters != null && parameters.Length > 0)
+                parseFast = (bool) parameters[0];
+
             var CMapDataBlocks = this.ResourceFile.ResourceData.FindBlocks(MetaName.CMapData);
 
             if (CMapDataBlocks.Length == 0)
@@ -46,10 +51,16 @@ namespace RageLib.Resources.GTA5.PC.GameFiles
             var CMapData = MetaUtils.ConvertData<CMapData>(CMapDataBlocks[0]);
             this.CMapData = new MCMapData();
 
-            this.CMapData.Parse(this.ResourceFile.ResourceData, CMapData);
+            if(parseFast)
+                this.CMapData.ParseFast(this.ResourceFile.ResourceData, CMapData);
+            else
+                this.CMapData.Parse(this.ResourceFile.ResourceData, CMapData);
+
+            for (int i = 0; i < this.CMapData.Entities.Count; i++)
+                this.CMapData.Entities[i].ParentIndex = this.CMapData.Entities[i].ParentIndex;
         }
 
-        public override void Build()
+        public override void Build(object[] parameters = null)
         {
             var mb = new MetaBuilder();
 

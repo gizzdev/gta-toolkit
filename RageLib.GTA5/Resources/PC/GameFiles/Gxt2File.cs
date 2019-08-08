@@ -34,7 +34,7 @@ namespace RageLib.Resources.GTA5.PC.GameFiles
         public uint EntryCount = 0;
         public List<Gxt2Entry> TextEntries = new List<Gxt2Entry>();
 
-        public override void Parse()
+        public override void Parse(object[] parameters = null)
         {
             using (BinaryReader br = new BinaryReader(this.Stream))
             {
@@ -81,7 +81,7 @@ namespace RageLib.Resources.GTA5.PC.GameFiles
             }
         }
 
-        public override void Build()
+        public override void Build(object[] parameters = null)
         {
 
         }

@@ -36,7 +36,7 @@ namespace RageLib.Resources.GTA5.PC.GameFiles
             this.CMapTypes = new MCMapTypes();
         }
 
-        public override void Parse()
+        public override void Parse(object[] parameters = null)
         {
             var CMapTypesBlocks = this.ResourceFile.ResourceData.FindBlocks(MetaName.CMapTypes);
 
@@ -49,7 +49,7 @@ namespace RageLib.Resources.GTA5.PC.GameFiles
             this.CMapTypes.Parse(this.ResourceFile.ResourceData, CMapTypes);
         }
 
-        public override void Build()
+        public override void Build(object[] parameters = null)
         {
             var mb = new MetaBuilder();
 

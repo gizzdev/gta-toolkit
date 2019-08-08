@@ -16,13 +16,121 @@ namespace RageLib.GTA5.ResourceWrappers.PC.Meta.Structures
 		public Vector4 Rotation;
 		public float ScaleXY;
 		public float ScaleZ;
-		public int ParentIndex;
-		public float LodDist;
+
+        public int _ParentIndex;
+
+        public int ParentIndex
+        {
+            get
+            {
+                return this._ParentIndex;
+            }
+            set
+            {
+                this._ParentIndex = value;
+
+                if(this.Parent != null)
+                {
+                    if (this._ParentEntity != null && this._ParentEntity.Children.IndexOf(this) != -1)
+                    {
+                        this._ParentEntity.Children.Remove(this);
+                        this._ParentEntity.NumChildren = (uint)this._ParentEntity.Children.Count;
+                    }
+
+                    if (value == -1)
+                    {
+                        this._ParentEntity = null;
+                    }
+                    else
+                    {
+                        var ymapEntity = this.Parent.Entities.Count > value ? this.Parent.Entities[value] : null;
+                        var parentYmapEntity = this.Parent?.ParentMapData?.Entities.Count > value ? this.Parent.ParentMapData.Entities[value] : null;
+                        var lodLevel = MCMapData.LodLevels.IndexOf(this.LodLevel);
+
+                        bool found = false;
+
+                        if (ymapEntity != null)
+                        {
+                            var ymapEntityLodLevel = MCMapData.LodLevels.IndexOf(ymapEntity.LodLevel);
+
+                            if (ymapEntityLodLevel < lodLevel)
+                            {
+                                found = true;
+                                this._ParentEntity = ymapEntity;
+                            }
+                        }
+
+                        if(!found && parentYmapEntity != null)
+                        {
+                            var parentYmapEntityLodLevel = MCMapData.LodLevels.IndexOf(parentYmapEntity.LodLevel);
+
+                            if (parentYmapEntityLodLevel < lodLevel)
+                            {
+                                found = true;
+                                this._ParentEntity = parentYmapEntity;
+                            }
+                        }
+
+                        if(!found)
+                        {
+                            this._ParentEntity = null;
+                        }
+
+                    }
+
+                    if (this._ParentEntity != null && this._ParentEntity.Children.IndexOf(this) == -1)
+                    {
+                        this._ParentEntity.Children.Add(this);
+                        this._ParentEntity.NumChildren = (uint)this._ParentEntity.Children.Count;
+                    }
+                }
+            }
+        }
+
+        public float LodDist;
 		public float ChildLodDist;
 		public Unk_1264241711 LodLevel;
 		public uint NumChildren;
 		public Unk_648413703 PriorityLevel;
 		public Array_StructurePointer Extensions;
+
+        public MCMapData Parent;
+        public MCEntityDef _ParentEntity = null;
+
+        public MCEntityDef ParentEntity
+        {
+            get
+            {
+                return this._ParentEntity;
+            }
+            set
+            {
+                if (this._ParentEntity != null && this.ParentEntity.Children.IndexOf(this) != -1)
+                {
+                    this._ParentEntity.Children.Remove(this);
+                    this._ParentEntity.NumChildren = (uint)this._ParentEntity.Children.Count;
+                }
+
+                this._ParentEntity = value;
+
+                if (value == null)
+                {
+                    this._ParentIndex = -1;
+                }
+                else
+                {
+                    this._ParentIndex = value.Parent.Entities.IndexOf(value);
+                }
+
+                if (this._ParentEntity != null && this.ParentEntity.Children.IndexOf(this) == -1)
+                {
+                    this._ParentEntity.Children.Add(this);
+                    this._ParentEntity.NumChildren = (uint) this._ParentEntity.Children.Count;
+                }
+            }
+        }
+
+        public List<MCEntityDef> Children = new List<MCEntityDef>();
 
         //Extensions
         public List<MCExtensionDefLightEffect> ExtensionDefLightEffect = new List<MCExtensionDefLightEffect>();
@@ -35,10 +143,12 @@ namespace RageLib.GTA5.ResourceWrappers.PC.Meta.Structures
 		public uint TintValue;
 
 
-        public MCEntityDef()
+        public MCEntityDef(MCMapData parent = null)
 		{
 			this.MetaName = MetaName.CEntityDef;
 			this.MetaStructure = new CEntityDef();
+
+            this.Parent = parent;
 		}
 
 		public static void AddEnumAndStructureInfo(MetaBuilder mb)
@@ -52,27 +162,26 @@ namespace RageLib.GTA5.ResourceWrappers.PC.Meta.Structures
 		}
 
 
-		public override void Parse(MetaFile meta, CEntityDef CEntityDef)
-		{
-			this.Meta = meta;
-			this.MetaStructure = CEntityDef;
+        public override void Parse(MetaFile meta, CEntityDef CEntityDef)
+        {
+            this.Meta = meta;
+            this.MetaStructure = CEntityDef;
 
-			this.ArchetypeName = CEntityDef.archetypeName;
-			this.Flags = CEntityDef.flags;
-			this.Guid = CEntityDef.guid;
-			this.Position = CEntityDef.position;
-			this.Rotation = CEntityDef.rotation;
-			this.ScaleXY = CEntityDef.scaleXY;
-			this.ScaleZ = CEntityDef.scaleZ;
-			this.ParentIndex = CEntityDef.parentIndex;
-			this.LodDist = CEntityDef.lodDist;
-			this.ChildLodDist = CEntityDef.childLodDist;
-			this.LodLevel = CEntityDef.lodLevel;
-			this.NumChildren = CEntityDef.numChildren;
-			this.PriorityLevel = CEntityDef.priorityLevel;
+            this.ArchetypeName = CEntityDef.archetypeName;
+            this.Flags = CEntityDef.flags;
+            this.Guid = CEntityDef.guid;
+            this.Position = CEntityDef.position;
+            this.Rotation = CEntityDef.rotation;
+            this.ScaleXY = CEntityDef.scaleXY;
+            this.ScaleZ = CEntityDef.scaleZ;
+            this.ParentIndex = CEntityDef.parentIndex;
+            this.LodDist = CEntityDef.lodDist;
+            this.ChildLodDist = CEntityDef.childLodDist;
+            this.LodLevel = CEntityDef.lodLevel;
+            this.NumChildren = CEntityDef.numChildren;
+            this.PriorityLevel = CEntityDef.priorityLevel;
 
             // Extensions
-
             var extptrs = MetaUtils.GetPointerArray(meta, CEntityDef.extensions);
 
             if(extptrs != null)
@@ -130,7 +239,32 @@ namespace RageLib.GTA5.ResourceWrappers.PC.Meta.Structures
 			this.TintValue = CEntityDef.tintValue;
 		}
 
-		public override void Build(MetaBuilder mb, bool isRoot = false)
+        public void ParseWithoutExtensions(MetaFile meta, CEntityDef CEntityDef)
+        {
+            this.Meta = meta;
+            this.MetaStructure = CEntityDef;
+
+            this.ArchetypeName = CEntityDef.archetypeName;
+            this.Flags = CEntityDef.flags;
+            this.Guid = CEntityDef.guid;
+            this.Position = CEntityDef.position;
+            this.Rotation = CEntityDef.rotation;
+            this.ScaleXY = CEntityDef.scaleXY;
+            this.ScaleZ = CEntityDef.scaleZ;
+            this.ParentIndex = CEntityDef.parentIndex;
+            this.LodDist = CEntityDef.lodDist;
+            this.ChildLodDist = CEntityDef.childLodDist;
+            this.LodLevel = CEntityDef.lodLevel;
+            this.NumChildren = CEntityDef.numChildren;
+            this.PriorityLevel = CEntityDef.priorityLevel;
+
+            this.AmbientOcclusionMultiplier = CEntityDef.ambientOcclusionMultiplier;
+            this.ArtificialAmbientOcclusion = CEntityDef.artificialAmbientOcclusion;
+            this.TintValue = CEntityDef.tintValue;
+        }
+
+
+        public override void Build(MetaBuilder mb, bool isRoot = false)
 		{
 			this.MetaStructure.archetypeName = this.ArchetypeName;
 			this.MetaStructure.flags = this.Flags;
