@@ -54,12 +54,19 @@ namespace RageLib.GTA5.ResourceWrappers.PC
             sb.Append("</error>");
             sb.AppendLine();
         }
-        public static void OpenTag(StringBuilder sb, int indent, string name, bool appendLine = true)
+        public static void OpenTag(StringBuilder sb, int indent, string name, bool appendLine = true, string nameAttribute = "")
         {
             Indent(sb, indent);
             sb.Append("<");
             sb.Append(name);
-            sb.Append(">");
+            if (string.IsNullOrWhiteSpace(nameAttribute))
+            {
+                sb.Append(">");
+            }
+            else
+            {
+                sb.Append(" name=\"" + nameAttribute + "\">");
+            }
             if (appendLine) sb.AppendLine();
         }
         public static void CloseTag(StringBuilder sb, int indent, string name, bool appendLine = true)

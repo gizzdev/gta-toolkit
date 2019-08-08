@@ -124,7 +124,7 @@ namespace RageLib.Resources.GTA5.PC.Meta
             this.StructureInfosPointer = this.StructureInfos?.Position ?? 0;
             this.EnumInfosPointer = this.EnumInfos?.Position ?? 0;
             this.DataBlocksPointer = this.DataBlocks?.Position ?? 0;
-            //this.NamePointer = this.Name?.Position ?? 0;
+            this.NamePointer = this.Name?.Position ?? 0;
             this.UselessPointer = 0;
             this.StructureInfosCount = (short)(this.StructureInfos?.Count ?? 0);
             this.EnumInfosCount = (short)(this.EnumInfos?.Count ?? 0);
