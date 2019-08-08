@@ -861,6 +861,7 @@ CPedModelInfo__InitData
 CPedModelInfo__InitDataList
 CPedModelInfo__PersonalityDataList
 CPedPropExpressionData
+CPedPropInfo
 CPedTargetEvaluator__Tunables
 CPedTargetting__Tunables
 CPlayerCoverClipVariationHelper__Tunables

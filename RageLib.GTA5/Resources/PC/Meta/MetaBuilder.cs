@@ -366,7 +366,7 @@ namespace RageLib.Resources.GTA5.PC.Meta
 
 
 
-        public MetaFile GetMeta()
+        public MetaFile GetMeta(string metaName = "")
         {
             MetaFile m = new MetaFile();
             m.Unknown_10h = 0x50524430;
@@ -394,6 +394,8 @@ namespace RageLib.Resources.GTA5.PC.Meta
                 m.DataBlocks.Add(bb.GetMetaDataBlock());
             }
             m.DataBlocksCount = (short)m.DataBlocks.Count;
+
+            m.Name = (string_r)metaName;
 
             return m;
         }

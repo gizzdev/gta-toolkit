@@ -40,13 +40,13 @@ namespace RageLib.GTA5.ResourceWrappers.PC.Meta
             {
                 var cont = new MetaCont(meta);
 
-                WriteNode(sb, 0, cont, meta.RootBlockIndex, 0, XmlTagMode.Structure);
+                WriteNode(sb, 0, cont, meta.RootBlockIndex, 0, XmlTagMode.Structure, 0, (string)meta.Name);
             }
 
             return sb.ToString();
         }
 
-        private static void WriteNode(StringBuilder sb, int indent, MetaCont cont, int blockId, int offset, XmlTagMode tagMode = XmlTagMode.None, MetaName structName = 0)
+        private static void WriteNode(StringBuilder sb, int indent, MetaCont cont, int blockId, int offset, XmlTagMode tagMode = XmlTagMode.None, MetaName structName = 0, string metaName = "")
         {
 
             var block = cont.Meta.GetBlock(blockId);
@@ -80,13 +80,13 @@ namespace RageLib.GTA5.ResourceWrappers.PC.Meta
             switch (tagMode)
             {
                 case XmlTagMode.Structure:
-                    OpenTag(sb, indent, name);
+                    OpenTag(sb, indent, name, true, metaName);
                     break;
                 case XmlTagMode.Item:
-                    OpenTag(sb, indent, "Item");
+                    OpenTag(sb, indent, "Item", true, metaName);
                     break;
                 case XmlTagMode.ItemAndType:
-                    OpenTag(sb, indent, "Item type=\"" + name + "\"");
+                    OpenTag(sb, indent, "Item type=\"" + name + "\"", true, metaName);
                     break;
             }
 
