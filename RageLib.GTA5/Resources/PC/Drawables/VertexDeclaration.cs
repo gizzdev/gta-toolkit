@@ -10,11 +10,11 @@ namespace RageLib.Resources.GTA5.PC.Drawables
         }
 
         // structure data
-        public uint Flags { get; set; }
-        public ushort Stride { get; set; }
-        public byte Unknown_6h { get; set; }
-        public byte Count { get; set; }
-        public ulong Types { get; set; }
+        public uint Flags;
+        public ushort Stride;
+        public byte Unknown_6h;
+        public byte Count;
+        public ulong Types;
 
         /// <summary>
         /// Reads the data-block from a stream.

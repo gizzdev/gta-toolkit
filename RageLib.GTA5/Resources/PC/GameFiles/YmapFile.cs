@@ -62,6 +62,9 @@ namespace RageLib.Resources.GTA5.PC.GameFiles
 
         public override void Build(object[] parameters = null)
         {
+            for (int i = 0; i < this.CMapData.Entities.Count; i++)
+                this.CMapData.Entities[i].ParentEntity = this.CMapData.Entities[i].ParentEntity;
+
             var mb = new MetaBuilder();
 
             mb.EnsureBlock(MetaName.CMapData);

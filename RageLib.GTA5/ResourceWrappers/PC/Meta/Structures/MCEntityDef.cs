@@ -119,7 +119,7 @@ namespace RageLib.GTA5.ResourceWrappers.PC.Meta.Structures
                 }
                 else
                 {
-                    this._ParentIndex = value.Parent.Entities.IndexOf(value);
+                    this._ParentIndex = value.Parent?.Entities.IndexOf(value) ?? -1;
                 }
 
                 if (this._ParentEntity != null && this.ParentEntity.Children.IndexOf(this) == -1)

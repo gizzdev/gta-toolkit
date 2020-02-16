@@ -24,6 +24,7 @@ using System;
 using System.Collections.Generic;
 using RageLib.GTA5.Resources.PC;
 using RageLib.GTA5.ResourceWrappers.PC.Meta.Structures;
+using RageLib.Resources.Common;
 
 using RageLib.Resources.GTA5.PC.Meta;
 using SharpDX;
@@ -33,6 +34,7 @@ namespace RageLib.Resources.GTA5.PC.GameFiles
     public class YmtPedDefinitionFile : GameFileBase_Resource<MetaFile>
     {
         public MUnk_376833625 Unk_376833625;
+        public string metaYmtName = "";
 
         public YmtPedDefinitionFile()
         {
@@ -50,6 +52,8 @@ namespace RageLib.Resources.GTA5.PC.GameFiles
             this.Unk_376833625 = new RageLib.GTA5.ResourceWrappers.PC.Meta.Structures.MUnk_376833625();
 
             this.Unk_376833625.Parse(this.ResourceFile.ResourceData, Unk_376833625);
+
+            this.metaYmtName = (string)this.ResourceFile.ResourceData.Name;
         }
 
         public override void Build(object[] parameters = null)
@@ -59,6 +63,8 @@ namespace RageLib.Resources.GTA5.PC.GameFiles
             mb.EnsureBlock((MetaName)376833625);
 
             this.Unk_376833625.Build(mb, true);
+
+            this.Unk_376833625.Meta.Name = (string_r)metaYmtName;
 
             ResourceFile.Version = ResourceFileTypes_GTA5_pc.Meta.Version;
             ResourceFile.ResourceData = this.Unk_376833625.Meta;

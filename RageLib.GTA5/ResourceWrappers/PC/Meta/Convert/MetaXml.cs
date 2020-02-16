@@ -40,7 +40,7 @@ namespace RageLib.GTA5.ResourceWrappers.PC.Meta
             {
                 var cont = new MetaCont(meta);
 
-                WriteNode(sb, 0, cont, meta.RootBlockIndex, 0, XmlTagMode.Structure, 0, (string)meta.Name);
+                WriteNode(sb, 0, cont, meta.RootBlockIndex, 0, XmlTagMode.Structure, 0, meta.Name is null ? "" : (string)meta.Name);
             }
 
             return sb.ToString();

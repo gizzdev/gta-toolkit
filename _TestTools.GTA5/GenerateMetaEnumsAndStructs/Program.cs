@@ -25,6 +25,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using RageLib.GTA5.Archives;
 using RageLib.GTA5.Cryptography;
 using RageLib.GTA5.Utilities;
@@ -81,7 +82,7 @@ namespace GenerateMetaEnumsAndStructs
 
             ArchiveUtilities.ForEachFile(GTAVDir, (fullName, file, encryption) =>
             {
-                if(file.Name.EndsWith(".ymap") || file.Name.EndsWith(".ytyp") || file.Name.EndsWith(".ymt"))
+                if(/*file.Name.EndsWith(".ymap") || file.Name.EndsWith(".ytyp") || */file.Name.EndsWith(".ymt") && Regex.Match(file.Name, @"mp_m_freemode_01.*\.ymt").Success)
                 {
                     using (MemoryStream ms = new MemoryStream())
                     {
@@ -868,12 +869,12 @@ namespace GenerateMetaEnumsAndStructs
     {
         public bool Equals(StructureInfo a, StructureInfo b)
         {
-            return a.StructureKey == b.StructureKey;
+            return a.StructureKey == b.StructureKey && a.StructureLength == b.StructureLength;
         }
 
         public int GetHashCode(StructureInfo e)
         {
-            return e.StructureKey;
+            return e.StructureKey + e.StructureLength;
         }
     }
 }
