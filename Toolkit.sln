@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.26403.7
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.33424.131
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tools", "Tools", "{36EED776-1944-4C7B-A662-FBB1E36B6773}"
 EndProject
@@ -12,6 +12,9 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RageLib", "RageLib\RageLib.csproj", "{718F3F76-51AE-46CB-B11B-027B9BBC8A0B}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RageLib.GTA5", "RageLib.GTA5\RageLib.GTA5.csproj", "{569CDE34-96F0-44BE-BD31-62B6A43C85B8}"
+	ProjectSection(ProjectDependencies) = postProject
+		{718F3F76-51AE-46CB-B11B-027B9BBC8A0B} = {718F3F76-51AE-46CB-B11B-027B9BBC8A0B}
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Libraries", "Libraries", "{12632945-ACEA-493E-AE35-36FBC4AD2FF1}"
 EndProject
@@ -20,10 +23,16 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MetaTool", "Tools\MetaTool\MetaTool.csproj", "{EE0B585C-081B-4E36-AF53-7F4E4D5E7A65}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RageLib.GTA5.UnitTests", "RageLib.GTA5.UnitTests\RageLib.GTA5.UnitTests.csproj", "{34E4D20C-A0BF-4BE8-B35E-B18E73BA2D23}"
+	ProjectSection(ProjectDependencies) = postProject
+		{569CDE34-96F0-44BE-BD31-62B6A43C85B8} = {569CDE34-96F0-44BE-BD31-62B6A43C85B8}
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "_TestTools.GTA5", "_TestTools.GTA5", "{E240F677-DCC5-4C33-B370-119A9E4A5144}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExtractKeysFromDump", "_TestTools.GTA5\ExtractKeysFromDump\ExtractKeysFromDump.csproj", "{D6DC4413-15ED-4511-B0DB-D287EA1FDC99}"
+	ProjectSection(ProjectDependencies) = postProject
+		{569CDE34-96F0-44BE-BD31-62B6A43C85B8} = {569CDE34-96F0-44BE-BD31-62B6A43C85B8}
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GenerateMetaEnumsAndStructs", "_TestTools.GTA5\GenerateMetaEnumsAndStructs\GenerateMetaEnumsAndStructs.csproj", "{AA6C01BA-97C3-498E-8274-16CF113B5B3D}"
 	ProjectSection(ProjectDependencies) = postProject

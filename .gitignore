@@ -21,3 +21,7 @@ Toolkit.VC.VC.opendb
 
 # Doxygen
 doxygen-xml/*
+
+#dist
+*.zip
+
