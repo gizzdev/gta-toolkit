@@ -30,4 +30,5 @@ function Find-MSBuild
 
 $MSBuild = Find-MSBuild
 
+& "$MSBuild" -t:restore
 & "$MSBuild" Toolkit.sln /p:Configuration=$build
