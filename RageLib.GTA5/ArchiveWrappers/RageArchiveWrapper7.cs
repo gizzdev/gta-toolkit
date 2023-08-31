@@ -816,7 +816,7 @@ namespace RageLib.GTA5.ArchiveWrappers
                           ((file.SystemFlags & 0xF0000000) >> 24);
 
             var writer = new DataWriter(stream);
-            writer.Write((uint)0x07435352);
+            writer.Write((uint)0x37435352);
             writer.Write((uint)version);
             writer.Write((uint)file.SystemFlags);
             writer.Write((uint)file.GraphicsFlags);
